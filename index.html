@@ -3,65 +3,158 @@
 <head>
    <meta charset="UTF-8" />
    <title>Agni Systems Limited</title>
-   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
    <style>
-      @font-face { font-family:"UNBangla"; src:url("fonts/UNBangla-Regular.woff2") format("woff2"); font-weight:normal; font-style:normal; font-display:swap; }
-      *{box-sizing:border-box;}
-      body{font-family:"UNBangla",sans-serif;background:#e0e0e0;margin:0;padding:0;}
-      .search-area{background:#2c3e50;color:white;padding:8px 10px;text-align:center;position:sticky;top:0;z-index:100;box-shadow:0 2px 10px rgba(0,0,0,.3);display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:center;}
-      .search-area button{padding:6px 14px;background:#27ae60;color:white;border:none;border-radius:4px;cursor:pointer;font-weight:bold;font-size:12px;}
-      .search-area button:hover{opacity:.85;}
-      .nav-control{display:inline-flex;align-items:center;background:#34495e;border-radius:6px;overflow:hidden;}
-      .nav-control button{background:#34495e;border:none;color:white;padding:6px 10px;cursor:pointer;font-size:14px;}
-      .nav-control button:hover{background:#3d566e;}
-      .nav-control input{width:55px;text-align:center;border:none;background:#1f2c3a;color:white;padding:6px;font-size:12px;}
-      #syncStatus{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:bold;}
-      #syncStatus.synced{background:#27ae60;color:#fff;}
-      #syncStatus.syncing{background:#f39c12;color:#fff;}
-      #syncStatus.error{background:#e74c3c;color:#fff;}
-      .a4-page{width:210mm;min-height:297mm;height:297mm;padding:10mm;margin:10px auto;background:white;box-shadow:0 0 10px rgba(0,0,0,.2);display:flex;flex-direction:column;}
-      .header-wrapper{display:flex;align-items:center;justify-content:center;padding:5px 10px;position:relative;}
-      .header-left-box{border:1px solid #000;padding:5px 10px;min-width:50px;text-align:center;font-size:14px;font-weight:bold;background:#f2f2f2;font-family:monospace;position:absolute;left:10px;}
-      .header-center{text-align:center;flex:1;}
-      .header-center img{width:50px;height:auto;display:block;margin:0 auto;}
-      .header-center h1{margin:0;font-size:16px;}
-      .header-center h2{margin:0;font-size:12px;font-weight:600;}
-      .header-center h3{margin:0;font-size:11px;text-decoration:underline;}
-      .info-table{width:100%;border-collapse:collapse;margin-top:10px;table-layout:fixed;}
-      .info-table td{border:1px solid #000;padding:2px 4px;font-size:10px;height:18px;}
-      .label-bg{background:#f2f2f2;width:35%;}
-      .label-bg label{display:block;width:100%;height:100%;cursor:pointer;}
-      .checkbox-row{display:flex;align-items:center;font-size:10px;gap:2px;flex-wrap:wrap;}
-      input[type="text"]{width:98%;padding:3px 4px;font-size:12px;border:none;outline:none;background:transparent;}
-      input[type="radio"]{vertical-align:middle;}
-      #equipTable input[type="text"]{width:100%;padding:1px 2px;font-size:10px;border:none;outline:none;background:transparent;}
-      .price{border:none!important;background:transparent;width:100%;height:20px;text-align:center;padding:0;}
-      .price-2{border:none!important;background:transparent;width:100%;height:41px;text-align:center;padding:0;}
-      .section-header{font-weight:bold;font-size:12px;margin-top:8px;border-bottom:1px solid #000;display:inline-block;}
-      .terms-box{font-size:10px;line-height:1.4;margin-top:10px;}
-      .sig-container{display:flex;justify-content:space-between;margin-top:30px;}
-      .sig-item{width:40%;border-top:1px solid #000;text-align:left;font-size:11px;padding-top:4px;}
-      .popup-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;justify-content:center;align-items:center;}
-      .popup-overlay.active{display:flex;}
-      .popup-box{width:600px;max-width:94%;background:#fff;border-radius:8px;box-shadow:0 5px 20px rgba(0,0,0,.3);overflow:hidden;}
-      .popup-box.wide{width:700px;}
-      .popup-header{background:#2c3e50;color:white;padding:15px 20px;display:flex;justify-content:space-between;align-items:center;}
-      .popup-header h3{margin:0;font-size:18px;}
-      .popup-close{background:none;border:none;color:white;font-size:24px;cursor:pointer;line-height:1;}
-      .popup-content{padding:20px;font-size:15px;line-height:1.6;color:#333;min-height:50px;}
-      .popup-footer{padding:12px 20px;border-top:1px solid #eee;text-align:right;}
-      .popup-btn{padding:8px 22px;border:none;border-radius:5px;font-size:14px;cursor:pointer;font-weight:600;color:white;margin-left:6px;}
-      .popup-btn.grey{background:#7f8c8d;}
-      .popup-box.success .popup-header{background:#27ae60;}
-      .popup-box.error .popup-header{background:#c0392b;}
-      .popup-box.warning .popup-header{background:#f39c12;}
-      .popup-box.info .popup-header{background:#3498db;}
-      @media print{body{background:white;}.search-area{display:none;}.a4-page{height:297mm;padding:5mm 10mm;margin:0;box-shadow:none;}.popup-overlay{display:none!important;}}
+      @font-face {
+         font-family: "UNBangla";
+         src: url("fonts/UNBangla-Regular.woff2") format("woff2");
+         font-weight: normal; font-style: normal; font-display: swap;
+      }
+      * { box-sizing: border-box; }
+      body { font-family: "UNBangla", sans-serif; background-color: #e0e0e0; margin: 0; padding: 0; }
+
+      .search-area {
+         background: #2c3e50; color: white; padding: 8px 10px;
+         text-align: center; position: sticky; top: 0; z-index: 100;
+         box-shadow: 0 2px 10px rgba(0,0,0,.3); display: flex;
+         flex-wrap: wrap; gap: 6px; align-items: center; justify-content: center;
+      }
+      .search-area button {
+         padding: 6px 14px; background: #27ae60; color: white;
+         border: none; border-radius: 4px; cursor: pointer;
+         font-weight: bold; font-size: 12px;
+      }
+      .search-area button:hover { opacity: .85; }
+      .nav-control {
+         display: inline-flex; align-items: center;
+         background: #34495e; border-radius: 6px; overflow: hidden;
+      }
+      .nav-control button { background: #34495e; border: none; color: white; padding: 6px 10px; cursor: pointer; font-size: 14px; }
+      .nav-control button:hover { background: #3d566e; }
+      .nav-control input {
+         width: 55px; text-align: center; border: none;
+         background: #1f2c3a; color: white; padding: 6px; font-size: 12px;
+      }
+
+      #syncStatus {
+         display: inline-flex; align-items: center; gap: 5px;
+         padding: 4px 12px; border-radius: 20px; font-size: 11px;
+         font-weight: bold; transition: all .4s;
+      }
+      #syncStatus.synced  { background: #27ae60; color:#fff; }
+      #syncStatus.syncing { background: #f39c12; color:#fff; }
+      #syncStatus.offline { background: #7f8c8d; color:#fff; }
+      #syncStatus.error   { background: #e74c3c; color:#fff; }
+      .dot { width:8px; height:8px; border-radius:50%; background:currentColor; display:inline-block; }
+      @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+      .dot.pulse { animation: pulse 1.2s infinite; }
+
+      .a4-page {
+         width: 210mm; min-height: 297mm; height: 297mm;
+         padding: 10mm; margin: 10px auto; background: white;
+         box-shadow: 0 0 10px rgba(0,0,0,.2);
+         display: flex; flex-direction: column; justify-content: flex-start;
+      }
+      .header-wrapper { display:flex; align-items:center; justify-content:center; padding:5px 10px; position:relative; }
+      .header-left-box {
+         border:1px solid #000; padding:5px 10px; min-width:50px; text-align:center;
+         font-size:14px; font-weight:bold; background:#f2f2f2; font-family:monospace;
+         position:absolute; left:10px;
+      }
+      .header-center { text-align:center; flex:1; }
+      .header-center img { width:50px; height:auto; display:block; margin:0 auto; }
+      .header-center h1 { margin:0; font-size:16px; }
+      .header-center h2 { margin:0; font-size:12px; font-weight:600; }
+      .header-center h3 { margin:0; font-size:11px; text-decoration:underline; }
+      .info-table { width:100%; border-collapse:collapse; margin-top:10px; table-layout:fixed; }
+      .info-table td { border:1px solid #000; padding:2px 4px; font-size:10px; height:18px; }
+      .label-bg { background:#f2f2f2; width:35%; }
+      .label-bg label { display:block; width:100%; height:100%; cursor:pointer; }
+      .checkbox-row { display:flex; align-items:center; font-size:10px; gap:2px; flex-wrap:wrap; }
+      input[type="text"] { width:98%; padding:3px 4px; font-size:12px; border:none; outline:none; background:transparent; }
+      input[type="radio"] { vertical-align:middle; }
+      #equipTable input[type="text"] { width:100%; padding:1px 2px; font-size:10px; border:none; outline:none; background:transparent; }
+      .price   { border:none !important; background:transparent; width:100%; height:20px; text-align:center; padding:0; }
+      .price-2 { border:none !important; background:transparent; width:100%; height:41px; text-align:center; padding:0; }
+      .section-header { font-weight:bold; font-size:12px; margin-top:8px; border-bottom:1px solid #000; display:inline-block; }
+      .terms-box { font-size:10px; line-height:1.4; margin-top:10px; }
+      .sig-container { display:flex; justify-content:space-between; margin-top:30px; }
+      .sig-item { width:40%; border-top:1px solid #000; text-align:left; font-size:11px; padding-top:4px; }
+
+      .popup-overlay {
+         display:none; position:fixed; inset:0;
+         background:rgba(0,0,0,.5); z-index:1000;
+         justify-content:center; align-items:center;
+      }
+      .popup-box { width:600px; max-width:94%; background:#fff; border-radius:8px; box-shadow:0 5px 20px rgba(0,0,0,.3); overflow:hidden; }
+      .popup-header { background:#2c3e50; color:white; padding:15px 20px; display:flex; justify-content:space-between; align-items:center; }
+      .popup-header h3 { margin:0; font-size:18px; }
+      .popup-close { background:none; border:none; color:white; font-size:24px; cursor:pointer; line-height:1; }
+      .popup-close:hover { color:#e74c3c; }
+      .popup-content { padding:20px; font-size:15px; line-height:1.6; color:#333; min-height:50px; }
+      .popup-footer { padding:12px 20px; border-top:1px solid #eee; text-align:right; }
+      .popup-btn { padding:8px 22px; border:none; border-radius:5px; font-size:14px; cursor:pointer; font-weight:600; color:white; margin-left:6px; }
+      .popup-btn.green { background:#27ae60; }
+      .popup-btn.grey  { background:#7f8c8d; }
+      .popup-btn.red   { background:#e74c3c; }
+      .popup-box.success .popup-header { background:#27ae60; }
+      .popup-box.error   .popup-header { background:#c0392b; }
+      .popup-box.warning .popup-header { background:#f39c12; }
+      .popup-box.info    .popup-header { background:#3498db; }
+
+      /* Loading overlay */
+      #loadingScreen {
+         display:flex; position:fixed; inset:0;
+         background:#2c3e50; z-index:9999;
+         justify-content:center; align-items:center; flex-direction:column; gap:16px;
+      }
+      #loadingScreen.hidden { display:none; }
+      .spinner {
+         width:48px; height:48px; border:5px solid rgba(255,255,255,.2);
+         border-top-color:#27ae60; border-radius:50%;
+         animation: spin .8s linear infinite;
+      }
+      @keyframes spin { to { transform:rotate(360deg); } }
+      #loadingScreen p { color:white; font-size:15px; margin:0; }
+
+      @media print {
+         body { background:white; }
+         .search-area { display:none; }
+         .a4-page { height:297mm; padding:5mm 10mm; margin:0; box-shadow:none; }
+         #loadingScreen, .popup-overlay { display:none !important; }
+      }
    </style>
 </head>
 <body>
 
+<!-- Loading Screen -->
+<div id="loadingScreen">
+   <div class="spinner"></div>
+   <p>Firebase এর সাথে সংযুক্ত হচ্ছে...</p>
+</div>
+
+<!-- General Popup -->
+<div class="popup-overlay" id="popupOverlay">
+   <div class="popup-box" id="popupBox">
+      <div class="popup-header"><h3 id="popupTitle">Message</h3><button class="popup-close" onclick="closePopup()">&times;</button></div>
+      <div class="popup-content" id="popupMessage"></div>
+      <div class="popup-footer"><button class="popup-btn grey" onclick="closePopup()">OK</button></div>
+   </div>
+</div>
+
+<!-- List Popup -->
+<div class="popup-overlay" id="listPopup">
+   <div class="popup-box" style="width:700px">
+      <div class="popup-header"><h3 id="listTitle">গ্রাহক তালিকা</h3><button class="popup-close" onclick="closeListPopup()">&times;</button></div>
+      <div style="padding:10px 16px;background:#f8f9fa;border-bottom:1px solid #eee">
+         <input type="text" id="listSearch" placeholder="🔍 ID / নাম / মোবাইল / লগইন" oninput="filterList()"
+            style="width:100%;padding:7px 10px;border:1.5px solid #ddd;border-radius:6px;font-size:13px;outline:none" />
+      </div>
+      <div class="popup-content" id="listContent" style="max-height:420px;overflow-y:auto;padding:0"></div>
+      <div class="popup-footer"><button class="popup-btn grey" onclick="closeListPopup()">বন্ধ করুন</button></div>
+   </div>
+</div>
+
+<!-- Toolbar -->
 <div class="search-area">
    <button onclick="addNew()">Add New</button>
    <div class="nav-control">
@@ -75,28 +168,8 @@
    <button onclick="exportData()">Export</button>
    <button onclick="importData()">Import</button>
    <button onclick="window.print()" style="background:#c0392b">Print</button>
-   <span id="syncStatus" class="syncing">↻ সংযুক্ত হচ্ছে...</span>
+   <span id="syncStatus" class="syncing"><span class="dot pulse"></span>&nbsp;সংযুক্ত হচ্ছে...</span>
    <input type="file" id="importFile" accept=".json" style="display:none" />
-</div>
-
-<div class="popup-overlay" id="popupOverlay">
-   <div class="popup-box" id="popupBox">
-      <div class="popup-header"><h3 id="popupTitle">Message</h3><button class="popup-close" onclick="closePopup()">&times;</button></div>
-      <div class="popup-content" id="popupMessage"></div>
-      <div class="popup-footer"><button class="popup-btn grey" onclick="closePopup()">OK</button></div>
-   </div>
-</div>
-
-<div class="popup-overlay" id="listPopup">
-   <div class="popup-box wide">
-      <div class="popup-header"><h3 id="listTitle">গ্রাহক তালিকা</h3><button class="popup-close" onclick="closeListPopup()">&times;</button></div>
-      <div style="padding:10px 16px;background:#f8f9fa;border-bottom:1px solid #eee">
-         <input type="text" id="listSearch" placeholder="🔍 ID / নাম / মোবাইল" oninput="filterList()"
-            style="width:100%;padding:7px 10px;border:1.5px solid #ddd;border-radius:6px;font-size:13px;outline:none"/>
-      </div>
-      <div class="popup-content" id="listContent" style="max-height:420px;overflow-y:auto;padding:0"></div>
-      <div class="popup-footer"><button class="popup-btn grey" onclick="closeListPopup()">বন্ধ করুন</button></div>
-   </div>
 </div>
 
 <!-- PAGE 1 -->
@@ -104,48 +177,49 @@
    <div class="header-wrapper">
       <div class="header-left-box" id="headerNumber">#0001</div>
       <div class="header-center">
-         <img src="logo.png" alt="Logo"/>
+         <img src="logo.png" alt="Logo" />
          <h1>AGNI SYSTEMS LIMITED</h1>
          <h2>ইন্টারনেট সেবা ব্যবহার সংক্রান্ত অঙ্গীকারনামা</h2>
          <h3>Internet Service and Equipment Usage Agreement</h3>
       </div>
    </div>
+
    <table class="info-table">
-      <tr><td class="label-bg"><label for="c_id">গ্রাহক আইডি (Customer ID):</label></td><td><input type="text" id="c_id"/></td></tr>
-      <tr><td class="label-bg"><label for="c_name">নাম / প্রতিষ্ঠানের নাম (Name/Company Name):</label></td><td><input type="text" id="c_name"/></td></tr>
-      <tr><td class="label-bg"><label for="c_login">লগইন আইডি (Login ID):</label></td><td><input type="text" id="c_login"/></td></tr>
-      <tr><td class="label-bg"><label for="c_pass">পাসওয়ার্ড (Password):</label></td><td><input type="text" id="c_pass"/></td></tr>
-      <tr><td class="label-bg"><label for="c_mob">মোবাইল নম্বর (Mobile):</label></td><td><input type="text" id="c_mob" maxlength="11"/></td></tr>
+      <tr><td class="label-bg"><label for="c_id">গ্রাহক আইডি (Customer ID):</label></td><td><input type="text" id="c_id" autofocus /></td></tr>
+      <tr><td class="label-bg"><label for="c_name">নাম / প্রতিষ্ঠানের নাম (Name/Company Name):</label></td><td><input type="text" id="c_name" /></td></tr>
+      <tr><td class="label-bg"><label for="c_login">লগইন আইডি (Login ID):</label></td><td><input type="text" id="c_login" /></td></tr>
+      <tr><td class="label-bg"><label for="c_pass">পাসওয়ার্ড (Password):</label></td><td><input type="text" id="c_pass" /></td></tr>
+      <tr><td class="label-bg"><label for="c_mob">মোবাইল নম্বর (Mobile):</label></td><td><input type="text" id="c_mob" maxlength="11" /></td></tr>
       <tr>
          <td class="label-bg">গ্রাহকের ধরন (Customer Type):</td>
          <td class="checkbox-row">
-            <input type="radio" name="Customer_Type" value="Home"/> Home
-            <input type="radio" name="Customer_Type" value="Office"/> Office
-            <input type="radio" name="Customer_Type" value="Mess"/> Mess
+            <input type="radio" name="Customer_Type" value="Home" /> Home
+            <input type="radio" name="Customer_Type" value="Office" /> Office
+            <input type="radio" name="Customer_Type" value="Mess" /> Mess
          </td>
       </tr>
       <tr>
          <td class="label-bg">প্যাকেজের ধরন (Package Type):</td>
          <td class="checkbox-row">
-            <input type="radio" name="Package_Type" value="25 Mbps"/> 25
-            <input type="radio" name="Package_Type" value="30 Mbps"/> 30
-            <input type="radio" name="Package_Type" value="35 Mbps"/> 35
-            <input type="radio" name="Package_Type" value="40 Mbps"/> 40
-            <input type="radio" name="Package_Type" value="50 Mbps"/> 50
-            <input type="radio" name="Package_Type" value="60 Mbps"/> 60
-            <input type="radio" name="Package_Type" value="70 Mbps"/> 70
-            <input type="radio" name="Package_Type" value="80 Mbps"/> 80
-            <input type="radio" name="Package_Type" value="100 Mbps"/> 100
+            <input type="radio" name="Package_Type" value="25 Mbps" /> 25
+            <input type="radio" name="Package_Type" value="30 Mbps" /> 30
+            <input type="radio" name="Package_Type" value="35 Mbps" /> 35
+            <input type="radio" name="Package_Type" value="40 Mbps" /> 40
+            <input type="radio" name="Package_Type" value="50 Mbps" /> 50
+            <input type="radio" name="Package_Type" value="60 Mbps" /> 60
+            <input type="radio" name="Package_Type" value="70 Mbps" /> 70
+            <input type="radio" name="Package_Type" value="80 Mbps" /> 80
+            <input type="radio" name="Package_Type" value="100 Mbps" /> 100
          </td>
       </tr>
-      <tr><td class="label-bg"><label for="c_recharge">রিচার্জের পরিমাণ (Recharge Amount):</label></td><td><input type="text" id="c_recharge"/></td></tr>
-      <tr><td class="label-bg"><label for="c_nid">জাতীয় পরিচয়পত্র/পাসপোর্ট (NID/Passport):</label></td><td><input type="text" id="c_nid"/></td></tr>
-      <tr><td class="label-bg"><label for="c_dob">জন্ম তারিখ (Date of Birth):</label></td><td><input type="text" id="c_dob" placeholder="DD/MM/YYYY" maxlength="10"/></td></tr>
-      <tr><td class="label-bg"><label for="c_house">বাসা নং এবং ফ্ল্যাট/তলা (House No.Flat/Level):</label></td><td><input type="text" id="c_house"/></td></tr>
-      <tr><td class="label-bg"><label for="c_area">এলাকা (Area):</label></td><td><input type="text" id="c_area"/></td></tr>
-      <tr><td class="label-bg">থানা (Thana):</td><td><input type="text" id="c_thana" value="PANCHAGARH SADAR"/></td></tr>
-      <tr><td class="label-bg"><label for="c_conn">সংযোগের তারিখ (Connection Date):</label></td><td><input type="text" id="c_conn" placeholder="DD/MM/YYYY" maxlength="10"/></td></tr>
-      <tr><td class="label-bg"><label for="c_remark">মন্তব্য (Remarks):</label></td><td><input type="text" id="c_remark"/></td></tr>
+      <tr><td class="label-bg"><label for="c_recharge">রিচার্জের পরিমাণ (Recharge Amount):</label></td><td><input type="text" id="c_recharge" /></td></tr>
+      <tr><td class="label-bg"><label for="c_nid">জাতীয় পরিচয়পত্র/পাসপোর্ট (NID/Passport):</label></td><td><input type="text" id="c_nid" /></td></tr>
+      <tr><td class="label-bg"><label for="c_dob">জন্ম তারিখ (Date of Birth):</label></td><td><input type="text" id="c_dob" placeholder="DD/MM/YYYY" maxlength="10" /></td></tr>
+      <tr><td class="label-bg"><label for="c_house">বাসা নং এবং ফ্ল্যাট/তলা (House No.Flat/Level):</label></td><td><input type="text" id="c_house" /></td></tr>
+      <tr><td class="label-bg"><label for="c_area">এলাকা (Area):</label></td><td><input type="text" id="c_area" /></td></tr>
+      <tr><td class="label-bg">থানা (Thana):</td><td><input type="text" id="c_thana" value="PANCHAGARH SADAR" /></td></tr>
+      <tr><td class="label-bg"><label for="c_conn">সংযোগের তারিখ (Connection Date):</label></td><td><input type="text" id="c_conn" placeholder="DD/MM/YYYY" maxlength="10" /></td></tr>
+      <tr><td class="label-bg"><label for="c_remark">মন্তব্য (Remarks):</label></td><td><input type="text" id="c_remark" /></td></tr>
    </table>
 
    <div class="section-header" style="margin-top:20px;font-size:16px">অঙ্গীকারকারীর বিবরণ,</div>
@@ -165,49 +239,49 @@
       </tr>
       <tr>
          <td>1.</td><td>রাউটার</td>
-         <td colspan="2"><input type="text" id="eq_r_model" style="text-align:center"/></td>
-         <td colspan="2"><input type="text" id="eq_r_qty" style="text-align:center"/></td>
-         <td><input type="text" id="eq_r_serial" style="text-align:center"/></td>
-         <td><input type="text" id="eq_r_price" class="price"/></td>
+         <td colspan="2"><input type="text" style="text-align:center"/></td>
+         <td colspan="2"><input type="text" style="text-align:center"/></td>
+         <td><input type="text" style="text-align:center"/></td>
+         <td><input type="text" class="price"/></td>
       </tr>
       <tr>
          <td rowspan="2">2.</td><td rowspan="2">ক্যাবল</td>
-         <td colspan="2"><input type="text" id="eq_c1_model" style="text-align:center"/></td>
-         <td colspan="2"><input type="text" id="eq_c1_qty" style="text-align:center"/></td>
-         <td><input type="text" id="eq_c1_serial" style="text-align:center"/></td>
-         <td><input type="text" id="eq_c1_price" class="price"/></td>
+         <td colspan="2"><input type="text" style="text-align:center"/></td>
+         <td colspan="2"><input type="text" style="text-align:center"/></td>
+         <td><input type="text" style="text-align:center"/></td>
+         <td><input type="text" class="price"/></td>
       </tr>
       <tr>
-         <td colspan="2"><input type="text" id="eq_c2_model" style="text-align:center"/></td>
-         <td colspan="2"><input type="text" id="eq_c2_qty" style="text-align:center"/></td>
-         <td><input type="text" id="eq_c2_serial" style="text-align:center"/></td>
-         <td><input type="text" id="eq_c2_price" class="price"/></td>
+         <td colspan="2"><input type="text" style="text-align:center"/></td>
+         <td colspan="2"><input type="text" style="text-align:center"/></td>
+         <td><input type="text" style="text-align:center"/></td>
+         <td><input type="text" class="price"/></td>
       </tr>
       <tr>
          <td>3.</td><td>অনু (ONU)</td>
-         <td colspan="2"><input type="text" id="eq_o_model" style="text-align:center"/></td>
-         <td colspan="2"><input type="text" id="eq_o_qty" style="text-align:center"/></td>
-         <td><input type="text" id="eq_o_serial" style="text-align:center"/></td>
-         <td><input type="text" id="eq_o_price" class="price"/></td>
+         <td colspan="2"><input type="text" style="text-align:center"/></td>
+         <td colspan="2"><input type="text" style="text-align:center"/></td>
+         <td><input type="text" style="text-align:center"/></td>
+         <td><input type="text" class="price"/></td>
       </tr>
       <tr>
          <td rowspan="2">4.</td><td rowspan="2">টিজে বক্স</td>
          <td colspan="2">2</td>
-         <td colspan="2"><input type="text" id="eq_t1_qty" style="text-align:center"/></td>
-         <td rowspan="2"><input type="text" id="eq_t_serial" style="text-align:center"/></td>
-         <td rowspan="2"><input type="text" id="eq_t_price" class="price-2"/></td>
+         <td colspan="2"><input type="text" style="text-align:center"/></td>
+         <td rowspan="2"><input type="text" style="text-align:center"/></td>
+         <td rowspan="2"><input type="text" class="price-2"/></td>
       </tr>
       <tr>
          <td>4</td><td>8</td>
-         <td><input type="text" id="eq_t2_qty4" style="text-align:center"/></td>
-         <td><input type="text" id="eq_t2_qty8" style="text-align:center"/></td>
+         <td><input type="text" style="text-align:center"/></td>
+         <td><input type="text" style="text-align:center"/></td>
       </tr>
       <tr>
          <td>5.</td><td>প্যাচকোড</td>
-         <td colspan="2"><input type="text" id="eq_p_model" style="text-align:center"/></td>
-         <td colspan="2"><input type="text" id="eq_p_qty" style="text-align:center"/></td>
-         <td><input type="text" id="eq_p_serial" style="text-align:center"/></td>
-         <td><input type="text" id="eq_p_price" class="price"/></td>
+         <td colspan="2"><input type="text" style="text-align:center"/></td>
+         <td colspan="2"><input type="text" style="text-align:center"/></td>
+         <td><input type="text" style="text-align:center"/></td>
+         <td><input type="text" class="price"/></td>
       </tr>
       <tr>
          <td>6.</td><td>স্প্লিটার (Splitter)</td>
@@ -217,8 +291,8 @@
             <input type="radio" name="splitter_type" value="1*8"/> 1*8
             <input type="radio" name="splitter_type" value="1*16"/> 1*16
          </td>
-         <td><input type="text" id="eq_s_serial" style="text-align:center"/></td>
-         <td><input type="text" id="eq_s_price" class="price"/></td>
+         <td><input type="text" style="text-align:center"/></td>
+         <td><input type="text" class="price"/></td>
       </tr>
       <tr>
          <td colspan="7" style="text-align:right"><b>মোট:</b></td>
@@ -236,7 +310,7 @@
    </div>
    <br/><br/>
    <div class="section-header" style="font-weight:bold;font-size:20px">সরঞ্জাম ফেরত প্রদান প্রসঙ্গে:</div>
-   <div class="terms-box">কোন কারণবশত যদি আমি ইন্টারনেট সেবা গ্রহণ বন্ধ করি, তবে আমি সরবরাহকৃত সমস্ত সরঞ্জাম অবিলম্বে <strong>AGNI SYSTEMS LTD</strong> কে ফেরত দেব।</div>
+   <div class="terms-box">কোন কারণবশত যদি আমি ইন্টারনেট সেবা গ্রহণ বন্ধ করি, তবে আমি সরবরাহকৃত সমস্ত সরঞ্জাম অবিলম্বে <strong>AGNI SYSTEMS LTD</strong> কে ফেরত দেব। <strong>AGNI SYSTEMS LTD</strong> এর যেকোনো প্রতিনিধিকে আমি সরঞ্জাম ফেরত নেওয়ার অধিকার প্রদান করছি।</div>
    <br/><br/>
    <div class="section-header" style="font-weight:bold;font-size:20px">ক্ষতি বা চুরির ক্ষেত্রে দায়িত্ব:</div>
    <div class="terms-box">সরবরাহকৃত সরঞ্জামের কোন ক্ষতি হলে বা চুরি হলে, আমি কর্তৃপক্ষকে এর যথাযথ ক্ষতিপূরণ বা মূল্য প্রদান করতে বাধ্য থাকব।</div>
@@ -271,193 +345,172 @@
    </div>
 </div>
 
-<script>
-// ══════════════════════════════════════
-// FIREBASE INIT
-// ══════════════════════════════════════
-const firebaseConfig = {
-   apiKey:"AIzaSyBpob-vMoKJZ66CSPJCVrnBp8CFuDztw7w",
-   authDomain:"agni-systems.firebaseapp.com",
-   projectId:"agni-systems",
-   storageBucket:"agni-systems.firebasestorage.app",
-   messagingSenderId:"604966730988",
-   appId:"1:604966730988:web:366c16f42ea0d8278639c9"
+<script type="module">
+// ════════════════════════════════════════════
+// FIREBASE CONFIG — hard-coded, auto-connect
+// ════════════════════════════════════════════
+import { initializeApp, getApps, getApp }
+   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, doc, setDoc, getDocs, deleteDoc }
+   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const FIREBASE_CONFIG = {
+   apiKey:            "AIzaSyBpob-vMoKJZ66CSPJCVrnBp8CFuDztw7w",
+   authDomain:        "agni-systems.firebaseapp.com",
+   projectId:         "agni-systems",
+   storageBucket:     "agni-systems.firebasestorage.app",
+   messagingSenderId: "604966730988",
+   appId:             "1:604966730988:web:366c16f42ea0d8278639c9",
 };
-if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-const fsdb = firebase.firestore();
 
-// ══════════════════════════════════════
-// STATE
-// ══════════════════════════════════════
-let DB = [], TRASHDB = [], cur = -1;
+// Singleton init — reload এ duplicate error হবে না
+const app = getApps().find(a => a.name==="agni") ?? initializeApp(FIREBASE_CONFIG, "agni");
+const FS  = getFirestore(app);
 
-function setStatus(s,msg){ const el=document.getElementById("syncStatus"); el.className=s; el.textContent=msg; }
+const COLL  = "customers";
+const TRASH = "trash";
 
-// ══════════════════════════════════════
-// EQUIPMENT IDs — named inputs (no nested arrays)
-// ══════════════════════════════════════
-const EQ_FIELDS = [
-   "eq_r_model","eq_r_qty","eq_r_serial","eq_r_price",
-   "eq_c1_model","eq_c1_qty","eq_c1_serial","eq_c1_price",
-   "eq_c2_model","eq_c2_qty","eq_c2_serial","eq_c2_price",
-   "eq_o_model","eq_o_qty","eq_o_serial","eq_o_price",
-   "eq_t1_qty","eq_t_serial","eq_t_price",
-   "eq_t2_qty4","eq_t2_qty8",
-   "eq_p_model","eq_p_qty","eq_p_serial","eq_p_price",
-   "eq_s_serial","eq_s_price"
-];
+// ── STATUS ────────────────────────────────
+function status(s) {
+   const el  = document.getElementById("syncStatus");
+   const MAP = {
+      synced:  ["synced",  false, "● Firebase সংযুক্ত"],
+      syncing: ["syncing", true,  "↻ সিঙ্ক হচ্ছে..."],
+      error:   ["error",   false, "✕ সংযোগ ত্রুটি"],
+   };
+   const [cls, pulse, txt] = MAP[s] || MAP.synced;
+   el.className = cls;
+   el.innerHTML = `<span class="dot${pulse?' pulse':''}"></span>&nbsp;${txt}`;
+}
 
-// ══════════════════════════════════════
-// FIRESTORE CRUD
-// ══════════════════════════════════════
-async function fbSave(data) {
-   setStatus("syncing","↻ সেভ হচ্ছে...");
+// ── FIRESTORE CRUD ────────────────────────
+async function fbSet(col, id, data) {
+   status("syncing");
+   try   { await setDoc(doc(FS, col, String(id)), data); status("synced"); }
+   catch(e) { status("error"); console.error(e); }
+}
+async function fbDel(col, id) {
+   try { await deleteDoc(doc(FS, col, String(id))); }
+   catch(e) { console.error(e); }
+}
+async function fbAll() {
+   status("syncing");
    try {
-      const id = String(data.id||"").trim();
-      if (!id) { setStatus("error","✕ ID নেই"); return false; }
-      // flat object — no nested arrays
-      const flat = {};
-      Object.keys(data).forEach(k => {
-         const v = data[k];
-         flat[k] = (v === undefined || v === null) ? "" : v;
-      });
-      await fsdb.collection("customers").doc(id).set(flat);
-      setStatus("synced","● Firebase সংযুক্ত");
-      return true;
-   } catch(e) {
-      console.error("fbSave:",e);
-      setStatus("error","✕ "+ (e.code||e.message));
-      return false;
-   }
-}
-
-async function fbDelete(id, rec) {
-   try {
-      await fsdb.collection("customers").doc(String(id)).delete();
-      if (rec) {
-         const flat={};
-         Object.keys(rec).forEach(k=>{ flat[k]=(rec[k]===undefined||rec[k]===null)?"":rec[k]; });
-         await fsdb.collection("trash").doc(String(id)).set(flat);
-      }
-   } catch(e){console.error(e);}
-}
-async function fbTrashDelete(id){ try{ await fsdb.collection("trash").doc(String(id)).delete(); }catch(e){console.error(e);} }
-async function fbRestore(id,rec){
-   try{
-      const flat={};
-      Object.keys(rec).forEach(k=>{ flat[k]=(rec[k]===undefined||rec[k]===null)?"":rec[k]; });
-      await fsdb.collection("customers").doc(String(id)).set(flat);
-      await fsdb.collection("trash").doc(String(id)).delete();
-   }catch(e){console.error(e);}
-}
-
-async function fbLoadAll(){
-   setStatus("syncing","↻ লোড হচ্ছে...");
-   try{
-      const [cs,ts]=await Promise.all([
-         fsdb.collection("customers").get(),
-         fsdb.collection("trash").get()
+      const [cs, ts] = await Promise.all([
+         getDocs(collection(FS, COLL)),
+         getDocs(collection(FS, TRASH)),
       ]);
-      const customers=[],trashList=[];
-      cs.forEach(d=>customers.push(d.data()));
-      ts.forEach(d=>trashList.push(d.data()));
-      customers.sort((a,b)=>(Number(a.id)||0)-(Number(b.id)||0));
-      setStatus("synced","● Firebase সংযুক্ত");
-      return {customers,trash:trashList};
-   }catch(e){
-      console.error("fbLoadAll:",e);
-      setStatus("error","✕ "+(e.code||e.message));
-      return null;
-   }
+      const customers=[], trashList=[];
+      cs.forEach(d => customers.push(d.data()));
+      ts.forEach(d => trashList.push(d.data()));
+      customers.sort((a,b) => (Number(a.id)||0)-(Number(b.id)||0));
+      status("synced");
+      return { customers, trash: trashList };
+   } catch(e) { status("error"); console.error(e); return null; }
 }
 
-async function cloudSync(){
-   const r=await fbLoadAll();
-   if(r){ DB=r.customers; TRASHDB=r.trash; }
+// ── LOCAL STATE ───────────────────────────
+let DB    = JSON.parse(localStorage.getItem("customers")) || [];
+let TRASHDB = JSON.parse(localStorage.getItem("trash"))  || [];
+let cur   = -1;
+
+function localSave() {
+   localStorage.setItem("customers", JSON.stringify(DB));
+   localStorage.setItem("trash",     JSON.stringify(TRASHDB));
+}
+async function cloudSync() {
+   const r = await fbAll();
+   if (r) { DB = r.customers; TRASHDB = r.trash; localSave(); }
 }
 
-// ══════════════════════════════════════
-// HELPERS
-// ══════════════════════════════════════
-function nextId(){
-   const all=[...DB,...TRASHDB];
-   return String((all.length?Math.max(...all.map(c=>Number(c.id)||0)):0)+1).padStart(4,"0");
+// ── HELPERS ───────────────────────────────
+function nextId() {
+   const all = [...DB,...TRASHDB];
+   return String((all.length ? Math.max(...all.map(c=>Number(c.id)||0)) : 0)+1).padStart(4,"0");
 }
-function updateHeaderSerial(){
-   document.getElementById("headerNumber").textContent="#"+String(DB.length+1).padStart(4,"0");
+function updateHeaderSerial() {
+   document.getElementById("headerNumber").textContent =
+      "#" + String(DB.length+1).padStart(4,"0");
 }
-function updateTotal(){
-   const t=Array.from(document.querySelectorAll(".price,.price-2")).reduce((s,i)=>s+(Number(i.value)||0),0);
-   document.getElementById("totalPrice").textContent=t;
-}
-function autoSlash(id){
-   document.getElementById(id).addEventListener("input",function(){
-      let v=this.value.replace(/\D/g,"").slice(0,8),f="";
-      f=v.length>=2?v.slice(0,2)+"/":v;
-      if(v.length>=4)f+=v.slice(2,4)+"/"; else if(v.length>2)f+=v.slice(2);
-      if(v.length>4)f+=v.slice(4);
+function autoSlash(id) {
+   document.getElementById(id).addEventListener("input", function() {
+      let v=this.value.replace(/\D/g,"").slice(0,8), f="";
+      f = v.length>=2 ? v.slice(0,2)+"/" : v;
+      if (v.length>=4) f+=v.slice(2,4)+"/"; else if(v.length>2) f+=v.slice(2);
+      if (v.length>4) f+=v.slice(4);
       this.value=f;
    });
 }
+autoSlash("c_dob"); autoSlash("c_conn");
 
-// ══════════════════════════════════════
-// FORM GET / SET / CLEAR
-// ══════════════════════════════════════
-function formGet(){
+function updateTotal() {
+   const t=Array.from(document.querySelectorAll("#equipTable .price,.price-2"))
+      .reduce((s,i)=>s+(Number(i.value)||0),0);
+   document.getElementById("totalPrice").textContent=t;
+}
+document.querySelectorAll("#equipTable .price,.price-2")
+   .forEach(i=>i.addEventListener("input",updateTotal));
+
+// ── FORM ──────────────────────────────────
+function formGet() {
    const d={
-      id:           document.getElementById("c_id").value.trim(),
-      name:         document.getElementById("c_name").value.trim(),
-      login:        document.getElementById("c_login").value.trim(),
-      pass:         document.getElementById("c_pass").value.trim(),
-      mobile:       document.getElementById("c_mob").value.trim(),
-      recharge:     document.getElementById("c_recharge").value.trim(),
-      nid:          document.getElementById("c_nid").value.trim(),
-      dob:          document.getElementById("c_dob").value.trim(),
-      house:        document.getElementById("c_house").value.trim(),
-      area:         document.getElementById("c_area").value.trim(),
-      thana:        document.getElementById("c_thana").value.trim(),
-      conn:         document.getElementById("c_conn").value.trim(),
-      remark:       document.getElementById("c_remark").value.trim(),
-      customer_type:(document.querySelector('[name="Customer_Type"]:checked')||{}).value||"",
-      package_type: (document.querySelector('[name="Package_Type"]:checked')||{}).value||"",
-      splitter_type:(document.querySelector('[name="splitter_type"]:checked')||{}).value||"",
-      totalPrice:   0
+      id:            document.getElementById("c_id").value.trim(),
+      name:          document.getElementById("c_name").value.trim(),
+      login:         document.getElementById("c_login").value.trim(),
+      pass:          document.getElementById("c_pass").value.trim(),
+      mobile:        document.getElementById("c_mob").value.trim(),
+      recharge:      document.getElementById("c_recharge").value.trim(),
+      nid:           document.getElementById("c_nid").value.trim(),
+      dob:           document.getElementById("c_dob").value.trim(),
+      house:         document.getElementById("c_house").value.trim(),
+      area:          document.getElementById("c_area").value.trim(),
+      thana:         document.getElementById("c_thana").value.trim(),
+      conn:          document.getElementById("c_conn").value.trim(),
+      remark:        document.getElementById("c_remark").value.trim(),
+      customer_type: document.querySelector('[name="Customer_Type"]:checked')?.value||"",
+      package_type:  document.querySelector('[name="Package_Type"]:checked')?.value||"",
+      splitter_type: document.querySelector('[name="splitter_type"]:checked')?.value||"",
+      equipment:[], totalPrice:0,
    };
-   // Equipment — flat fields (no nested arrays)
-   EQ_FIELDS.forEach(id=>{
-      const el=document.getElementById(id);
-      d[id]=el?el.value:"";
-   });
-   d.totalPrice=Array.from(document.querySelectorAll(".price,.price-2")).reduce((s,i)=>s+(Number(i.value)||0),0);
+   const t=document.getElementById("equipTable");
+   for(let i=1;i<t.rows.length-1;i++){
+      const r=t.rows[i],row=[];
+      for(let j=0;j<r.cells.length;j++){
+         const inp=r.cells[j].querySelector('input[type="text"]');
+         row.push(inp?inp.value:r.cells[j].innerText.trim());
+      }
+      d.equipment.push(row);
+   }
+   d.totalPrice=Array.from(document.querySelectorAll("#equipTable .price,.price-2"))
+      .reduce((s,i)=>s+(Number(i.value)||0),0);
    return d;
 }
 
-function formSet(d){
-   document.getElementById("c_id").value      =d.id||"";
-   document.getElementById("c_name").value    =d.name||"";
-   document.getElementById("c_login").value   =d.login||"";
-   document.getElementById("c_pass").value    =d.pass||"";
-   document.getElementById("c_mob").value     =d.mobile||"";
-   document.getElementById("c_recharge").value=d.recharge||"";
-   document.getElementById("c_nid").value     =d.nid||"";
-   document.getElementById("c_dob").value     =d.dob||"";
-   document.getElementById("c_house").value   =d.house||"";
-   document.getElementById("c_area").value    =d.area||"";
-   document.getElementById("c_thana").value   =d.thana||"PANCHAGARH SADAR";
-   document.getElementById("c_conn").value    =d.conn||"";
-   document.getElementById("c_remark").value  =d.remark||"";
+function formSet(d) {
+   const MAP={c_id:"id",c_name:"name",c_login:"login",c_pass:"pass",
+              c_mob:"mobile",c_recharge:"recharge",c_nid:"nid",c_dob:"dob",
+              c_house:"house",c_area:"area",c_thana:"thana",c_conn:"conn",c_remark:"remark"};
+   Object.entries(MAP).forEach(([elId,key])=>{
+      document.getElementById(elId).value = d[key] || (key==="thana"?"PANCHAGARH SADAR":"");
+   });
    document.querySelectorAll('[name="Customer_Type"]').forEach(r=>r.checked=r.value===d.customer_type);
    document.querySelectorAll('[name="Package_Type"]').forEach(r =>r.checked=r.value===d.package_type);
    document.querySelectorAll('[name="splitter_type"]').forEach(r=>r.checked=r.value===d.splitter_type);
-   EQ_FIELDS.forEach(id=>{ const el=document.getElementById(id); if(el) el.value=d[id]||""; });
-   document.getElementById("sig_name").textContent  =d.name||"";
-   document.getElementById("sig_mobile").textContent=d.mobile||"";
+   if(Array.isArray(d.equipment)){
+      const tbl=document.getElementById("equipTable");
+      d.equipment.forEach((rd,i)=>{
+         if(i>=tbl.rows.length-1)return;
+         rd.forEach((v,j)=>{const inp=tbl.rows[i+1].cells[j]?.querySelector('input[type="text"]');if(inp)inp.value=v;});
+      });
+   }
+   document.getElementById("sig_name").textContent   = d.name||"";
+   document.getElementById("sig_mobile").textContent = d.mobile||"";
    updateTotal();
    const idx=DB.indexOf(d);
    if(idx>=0) document.getElementById("headerNumber").textContent="#"+String(idx+1).padStart(4,"0");
 }
 
-function formClear(){
+function formClear() {
    document.querySelectorAll("input[type=text]").forEach(i=>i.value="");
    document.querySelectorAll("input[type=radio]").forEach(i=>i.checked=false);
    document.getElementById("c_thana").value="PANCHAGARH SADAR";
@@ -466,48 +519,42 @@ function formClear(){
    document.getElementById("sig_mobile").textContent="";
 }
 
-// ══════════════════════════════════════
-// ACTIONS
-// ══════════════════════════════════════
-async function addNew(){
+// ── ACTIONS ───────────────────────────────
+window.addNew = async function() {
    const d=formGet();
    if(!d.name){showPopup("নাম লিখুন","warning");return;}
    if(!d.id) d.id=nextId();
-   const ok=await fbSave(d);
-   if(!ok)return;
    const i=DB.findIndex(c=>c.id==d.id);
-   if(i>=0)DB[i]=d; else DB.push(d);
+   if(i>=0) DB[i]=d; else DB.push(d);
+   localSave(); await fbSet(COLL,d.id,d);
    showPopup("✅ সেভ হয়েছে! নতুন ফর্ম প্রস্তুত।","success");
    formClear(); updateHeaderSerial(); cur=-1;
    document.getElementById("c_id").focus();
-}
+};
 
-async function saveData(){
+window.saveData = async function() {
    const d=formGet();
    if(!d.name){showPopup("নাম লিখুন","warning");return;}
    if(!d.id){d.id=nextId();document.getElementById("c_id").value=d.id;}
-   const ok=await fbSave(d);
-   if(!ok)return;
    const i=DB.findIndex(c=>c.id==d.id);
-   if(i>=0)DB[i]=d; else DB.push(d);
+   if(i>=0) DB[i]=d; else DB.push(d);
+   localSave(); await fbSet(COLL,d.id,d);
    showPopup("✅ ডাটা সংরক্ষণ হয়েছে","success");
-}
+};
 
-// ══════════════════════════════════════
-// NAVIGATION
-// ══════════════════════════════════════
-async function nextRecord(){
+// ── NAVIGATION ────────────────────────────
+window.nextRecord = async function() {
    await cloudSync();
    if(!DB.length){showPopup("কোনো ডাটা নেই","warning");return;}
    cur=(cur+1)%DB.length; formSet(DB[cur]);
    document.getElementById("navId").value=cur+1;
-}
-async function prevRecord(){
+};
+window.prevRecord = async function() {
    await cloudSync();
    if(!DB.length){showPopup("কোনো ডাটা নেই","warning");return;}
    cur=(cur-1+DB.length)%DB.length; formSet(DB[cur]);
    document.getElementById("navId").value=cur+1;
-}
+};
 document.getElementById("navId").addEventListener("keydown",function(e){
    if(e.key==="Enter"){
       const s=parseInt(this.value);
@@ -516,146 +563,142 @@ document.getElementById("navId").addEventListener("keydown",function(e){
    }
 });
 
-// ══════════════════════════════════════
-// LIST
-// ══════════════════════════════════════
-function listHTML(arr){
+// ── LIST ──────────────────────────────────
+function listHTML(arr) {
    if(!arr.length)return`<p style="text-align:center;color:#888;padding:20px">কোনো ডাটা নেই।</p>`;
    return`<table style="width:100%;border-collapse:collapse;font-size:12px">
-   <thead><tr style="background:#ecf0f1;position:sticky;top:0">
-      <th style="padding:7px">#</th><th>ID</th><th>নাম</th><th>মোবাইল</th><th>প্যাকেজ</th><th>একশন</th>
-   </tr></thead><tbody>`
+      <thead><tr style="background:#ecf0f1;position:sticky;top:0">
+         <th style="padding:7px 5px">#</th><th>ID</th><th>নাম</th><th>মোবাইল</th><th>একশন</th>
+      </tr></thead><tbody>`
    +arr.map((c,i)=>`<tr style="border-bottom:1px solid #f0f0f0">
-      <td style="text-align:center;padding:6px;color:#888">${i+1}</td>
-      <td style="padding:6px;font-family:monospace">${c.id}</td>
-      <td style="padding:6px">${c.name||""}</td>
-      <td style="padding:6px">${c.mobile||""}</td>
-      <td style="padding:6px">${c.package_type||""}</td>
+      <td style="text-align:center;padding:6px 4px;color:#888">${i+1}</td>
+      <td style="padding:6px 4px;font-family:monospace">${c.id}</td>
+      <td style="padding:6px 4px">${c.name||""}</td>
+      <td style="padding:6px 4px">${c.mobile||""}</td>
       <td style="text-align:center;padding:4px">
          <button style="padding:3px 9px;background:#3498db;color:#fff;border:none;border-radius:3px;cursor:pointer;margin:2px" onclick="viewRecord('${c.id}')">View</button>
          <button style="padding:3px 9px;background:#e74c3c;color:#fff;border:none;border-radius:3px;cursor:pointer;margin:2px" onclick="deleteFromList('${c.id}')">Delete</button>
       </td></tr>`).join("")+"</tbody></table>";
 }
 
-async function showList(){
+window.showList = async function() {
    document.getElementById("listTitle").textContent="গ্রাহক তালিকা";
    await cloudSync();
    document.getElementById("listContent").innerHTML=listHTML(DB);
-   document.getElementById("listPopup").classList.add("active");
-}
-function filterList(){
+   document.getElementById("listPopup").style.display="flex";
+};
+window.filterList = function() {
    const q=document.getElementById("listSearch").value.toLowerCase();
    document.getElementById("listContent").innerHTML=listHTML(
       DB.filter(c=>[c.id,c.name,c.mobile,c.login].some(v=>v&&v.toLowerCase().includes(q))));
-}
-function closeListPopup(){document.getElementById("listPopup").classList.remove("active");}
-function viewRecord(id){
+};
+window.closeListPopup=()=>document.getElementById("listPopup").style.display="none";
+
+window.viewRecord = function(id) {
    const i=DB.findIndex(c=>String(c.id)===String(id));
    if(i===-1){alert("পাওয়া যায়নি!");return;}
    cur=i; formSet(DB[i]); document.getElementById("navId").value=i+1; closeListPopup();
-}
+};
 
-// ══════════════════════════════════════
-// TRASH
-// ══════════════════════════════════════
-async function deleteFromList(id){
+// ── TRASH ─────────────────────────────────
+window.deleteFromList = async function(id) {
    const i=DB.findIndex(c=>c.id===id);
    if(i<0||!confirm(`ID: ${id} — ট্র্যাশে পাঠাবেন?`))return;
-   const rec=DB[i]; DB.splice(i,1); TRASHDB.push(rec);
-   await fbDelete(id,rec); showList();
-}
-async function showTrash(){
+   const rec=DB[i]; TRASHDB.push(rec); DB.splice(i,1); localSave();
+   await fbDel(COLL,id); await fbSet(TRASH,id,rec);
+   showList();
+};
+
+window.showTrash = async function() {
    document.getElementById("listTitle").textContent="🗑 Trash";
    await cloudSync();
-   document.getElementById("listContent").innerHTML=!TRASHDB.length
-      ?`<p style="text-align:center;color:#888;padding:20px">Trash খালি।</p>`
-      :`<table style="width:100%;border-collapse:collapse;font-size:12px">
-      <thead><tr style="background:#ecf0f1;position:sticky;top:0">
-         <th style="padding:7px">#</th><th>ID</th><th>নাম</th><th>মোবাইল</th><th>একশন</th>
-      </tr></thead><tbody>`
-      +TRASHDB.map((c,i)=>`<tr style="border-bottom:1px solid #f0f0f0">
-         <td style="text-align:center;padding:6px;color:#888">${i+1}</td>
-         <td style="padding:6px;font-family:monospace">${c.id}</td>
-         <td style="padding:6px">${c.name||""}</td>
-         <td style="padding:6px">${c.mobile||""}</td>
-         <td style="text-align:center;padding:4px">
-            <button style="padding:3px 9px;background:#27ae60;color:#fff;border:none;border-radius:3px;cursor:pointer;margin:2px" onclick="restoreRecord('${c.id}')">Restore</button>
-            <button style="padding:3px 9px;background:#e74c3c;color:#fff;border:none;border-radius:3px;cursor:pointer;margin:2px" onclick="permDelete('${c.id}')">Delete</button>
-         </td></tr>`).join("")+"</tbody></table>";
-   document.getElementById("listPopup").classList.add("active");
-}
-async function restoreRecord(id){
+   document.getElementById("listContent").innerHTML = !TRASHDB.length
+      ? `<p style="text-align:center;color:#888;padding:20px">Trash খালি।</p>`
+      : `<table style="width:100%;border-collapse:collapse;font-size:12px">
+         <thead><tr style="background:#ecf0f1;position:sticky;top:0">
+            <th style="padding:7px">#</th><th>ID</th><th>নাম</th><th>মোবাইল</th><th>একশন</th>
+         </tr></thead><tbody>`
+        +TRASHDB.map((c,i)=>`<tr style="border-bottom:1px solid #f0f0f0">
+           <td style="text-align:center;padding:6px;color:#888">${i+1}</td>
+           <td style="padding:6px;font-family:monospace">${c.id}</td>
+           <td style="padding:6px">${c.name||""}</td>
+           <td style="padding:6px">${c.mobile||""}</td>
+           <td style="text-align:center;padding:4px">
+              <button style="padding:3px 9px;background:#27ae60;color:#fff;border:none;border-radius:3px;cursor:pointer;margin:2px" onclick="restoreRecord('${c.id}')">Restore</button>
+              <button style="padding:3px 9px;background:#e74c3c;color:#fff;border:none;border-radius:3px;cursor:pointer;margin:2px" onclick="deleteFromTrash('${c.id}')">Delete</button>
+           </td></tr>`).join("")+"</tbody></table>";
+   document.getElementById("listPopup").style.display="flex";
+};
+window.restoreRecord = async function(id) {
    const i=TRASHDB.findIndex(c=>c.id===id); if(i<0)return;
-   const rec=TRASHDB[i]; TRASHDB.splice(i,1); DB.push(rec);
-   await fbRestore(id,rec); showTrash();
-}
-async function permDelete(id){
+   const rec=TRASHDB[i]; DB.push(rec); TRASHDB.splice(i,1); localSave();
+   await fbSet(COLL,id,rec); await fbDel(TRASH,id); showTrash();
+};
+window.deleteFromTrash = async function(id) {
    const i=TRASHDB.findIndex(c=>c.id===id);
    if(i<0||!confirm(`ID: ${id} — স্থায়ীভাবে মুছবেন?`))return;
-   TRASHDB.splice(i,1); await fbTrashDelete(id); showTrash();
-}
+   TRASHDB.splice(i,1); localSave(); await fbDel(TRASH,id); showTrash();
+};
 
-// ══════════════════════════════════════
-// EXPORT / IMPORT
-// ══════════════════════════════════════
-async function exportData(){
+// ── EXPORT / IMPORT ───────────────────────
+window.exportData = async function() {
+   const d=formGet();
+   if(d.name){if(!d.id)d.id=nextId();const i=DB.findIndex(c=>c.id==d.id);if(i>=0)DB[i]=d;else DB.push(d);localSave();await fbSet(COLL,d.id,d);}
    if(!DB.length){showPopup("ডাটা নেই","warning");return;}
    const a=document.createElement("a");
    a.href=URL.createObjectURL(new Blob([JSON.stringify(DB,null,2)],{type:"application/json"}));
    a.download="customers-"+new Date().toISOString().slice(0,10)+".json";
    a.click(); showPopup("✅ Export সম্পন্ন","success");
-}
-function importData(){document.getElementById("importFile").click();}
+};
+window.importData=()=>document.getElementById("importFile").click();
 document.getElementById("importFile").addEventListener("change",async function(e){
    const file=e.target.files[0]; if(!file)return;
-   const reader=new FileReader();
-   reader.onload=async function(ev){
+   const r=new FileReader();
+   r.onload=async function(ev){
       try{
          let imp=JSON.parse(ev.target.result);
          if(!Array.isArray(imp))imp=[imp];
          if(!imp.length){showPopup("ফাইল খালি","warning");return;}
          formSet(imp[0]); let n=0;
          for(const rec of imp){
-            if(rec.id&&!DB.find(c=>c.id==rec.id)){DB.push(rec);n++;await fbSave(rec);}
+            if(rec.id&&!DB.find(c=>c.id==rec.id)){DB.push(rec);n++;await fbSet(COLL,rec.id,rec);}
          }
-         showPopup(`${imp.length} রেকর্ড ইম্পোর্ট, ${n} নতুন।`,"success");
+         if(n)localSave();
+         showPopup(`${imp.length} রেকর্ড ইম্পোর্ট, ${n} নতুন যুক্ত।`,"success");
       }catch(err){showPopup("JSON Error: "+err.message,"error");}
    };
-   reader.readAsText(file); e.target.value="";
+   r.readAsText(file); e.target.value="";
 });
 
-// ══════════════════════════════════════
-// POPUP
-// ══════════════════════════════════════
-function showPopup(msg,type="info",title=""){
+// ── POPUP ─────────────────────────────────
+window.showPopup=function(msg,type="info",title=""){
    const t={success:"সফল",error:"ত্রুটি",warning:"সতর্কতা"};
    document.getElementById("popupBox").className="popup-box "+type;
    document.getElementById("popupTitle").textContent=title||t[type]||"বার্তা";
    document.getElementById("popupMessage").innerHTML=msg.replace(/\n/g,"<br>");
-   document.getElementById("popupOverlay").classList.add("active");
-}
-function closePopup(){document.getElementById("popupOverlay").classList.remove("active");}
-document.addEventListener("keydown",e=>{if(e.key==="Escape"){closePopup();closeListPopup();}});
+   document.getElementById("popupOverlay").style.display="flex";
+};
+window.closePopup=()=>document.getElementById("popupOverlay").style.display="none";
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closePopup();});
 
-// ══════════════════════════════════════
-// UX
-// ══════════════════════════════════════
+// ── UX ────────────────────────────────────
 document.querySelectorAll("input").forEach((el,i,arr)=>{
-   el.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();if(arr[i+1])arr[i+1].focus();}});
+   el.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();arr[i+1]?.focus();}});
 });
-document.getElementById("c_name").addEventListener("input",function(){document.getElementById("sig_name").textContent=this.value;});
-document.getElementById("c_mob").addEventListener("input",function(){document.getElementById("sig_mobile").textContent=this.value;});
-document.querySelectorAll(".price,.price-2").forEach(i=>i.addEventListener("input",updateTotal));
-autoSlash("c_dob"); autoSlash("c_conn");
+document.getElementById("c_name").addEventListener("input",function(){
+   document.getElementById("sig_name").textContent=this.value;
+});
+document.getElementById("c_mob").addEventListener("input",function(){
+   document.getElementById("sig_mobile").textContent=this.value;
+});
 
-// ══════════════════════════════════════
-// STARTUP
-// ══════════════════════════════════════
-window.addEventListener("load",async function(){
+// ── STARTUP ───────────────────────────────
+(async () => {
    updateTotal();
-   await cloudSync();
+   await cloudSync();          // Firebase থেকে সব ডাটা load
    updateHeaderSerial();
-});
+   document.getElementById("loadingScreen").classList.add("hidden"); // loading hide
+})();
 </script>
 </body>
 </html>
