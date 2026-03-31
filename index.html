@@ -3,6 +3,11 @@
 <head>
    <meta charset="UTF-8" />
    <title>Agni Systems Limited</title>
+
+   <!-- Firebase Compat SDK — GitHub Pages এ কাজ করে -->
+   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
    <style>
       @font-face {
          font-family: "UNBangla";
@@ -30,29 +35,22 @@
       }
       .nav-control button { background: #34495e; border: none; color: white; padding: 6px 10px; cursor: pointer; font-size: 14px; }
       .nav-control button:hover { background: #3d566e; }
-      .nav-control input {
-         width: 55px; text-align: center; border: none;
-         background: #1f2c3a; color: white; padding: 6px; font-size: 12px;
-      }
+      .nav-control input { width: 55px; text-align: center; border: none; background: #1f2c3a; color: white; padding: 6px; font-size: 12px; }
 
       #syncStatus {
          display: inline-flex; align-items: center; gap: 5px;
-         padding: 4px 12px; border-radius: 20px; font-size: 11px;
-         font-weight: bold; transition: all .4s;
+         padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: bold;
       }
       #syncStatus.synced  { background: #27ae60; color:#fff; }
       #syncStatus.syncing { background: #f39c12; color:#fff; }
-      #syncStatus.offline { background: #7f8c8d; color:#fff; }
       #syncStatus.error   { background: #e74c3c; color:#fff; }
-      .dot { width:8px; height:8px; border-radius:50%; background:currentColor; display:inline-block; }
-      @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
-      .dot.pulse { animation: pulse 1.2s infinite; }
+      @keyframes spin { to { transform: rotate(360deg); } }
 
       .a4-page {
          width: 210mm; min-height: 297mm; height: 297mm;
          padding: 10mm; margin: 10px auto; background: white;
          box-shadow: 0 0 10px rgba(0,0,0,.2);
-         display: flex; flex-direction: column; justify-content: flex-start;
+         display: flex; flex-direction: column;
       }
       .header-wrapper { display:flex; align-items:center; justify-content:center; padding:5px 10px; position:relative; }
       .header-left-box {
@@ -80,56 +78,48 @@
       .sig-container { display:flex; justify-content:space-between; margin-top:30px; }
       .sig-item { width:40%; border-top:1px solid #000; text-align:left; font-size:11px; padding-top:4px; }
 
-      .popup-overlay {
-         display:none; position:fixed; inset:0;
-         background:rgba(0,0,0,.5); z-index:1000;
-         justify-content:center; align-items:center;
-      }
+      .popup-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:1000; justify-content:center; align-items:center; }
       .popup-box { width:600px; max-width:94%; background:#fff; border-radius:8px; box-shadow:0 5px 20px rgba(0,0,0,.3); overflow:hidden; }
       .popup-header { background:#2c3e50; color:white; padding:15px 20px; display:flex; justify-content:space-between; align-items:center; }
       .popup-header h3 { margin:0; font-size:18px; }
       .popup-close { background:none; border:none; color:white; font-size:24px; cursor:pointer; line-height:1; }
-      .popup-close:hover { color:#e74c3c; }
       .popup-content { padding:20px; font-size:15px; line-height:1.6; color:#333; min-height:50px; }
       .popup-footer { padding:12px 20px; border-top:1px solid #eee; text-align:right; }
       .popup-btn { padding:8px 22px; border:none; border-radius:5px; font-size:14px; cursor:pointer; font-weight:600; color:white; margin-left:6px; }
-      .popup-btn.green { background:#27ae60; }
-      .popup-btn.grey  { background:#7f8c8d; }
-      .popup-btn.red   { background:#e74c3c; }
+      .popup-btn.grey { background:#7f8c8d; }
       .popup-box.success .popup-header { background:#27ae60; }
       .popup-box.error   .popup-header { background:#c0392b; }
       .popup-box.warning .popup-header { background:#f39c12; }
       .popup-box.info    .popup-header { background:#3498db; }
 
-      /* Loading overlay */
-      #loadingScreen {
-         display:flex; position:fixed; inset:0;
-         background:#2c3e50; z-index:9999;
-         justify-content:center; align-items:center; flex-direction:column; gap:16px;
-      }
-      #loadingScreen.hidden { display:none; }
-      .spinner {
-         width:48px; height:48px; border:5px solid rgba(255,255,255,.2);
-         border-top-color:#27ae60; border-radius:50%;
-         animation: spin .8s linear infinite;
-      }
-      @keyframes spin { to { transform:rotate(360deg); } }
-      #loadingScreen p { color:white; font-size:15px; margin:0; }
+      .popup-overlay.active { display:flex; }
 
       @media print {
          body { background:white; }
          .search-area { display:none; }
          .a4-page { height:297mm; padding:5mm 10mm; margin:0; box-shadow:none; }
-         #loadingScreen, .popup-overlay { display:none !important; }
+         .popup-overlay { display:none !important; }
       }
    </style>
 </head>
 <body>
 
-<!-- Loading Screen -->
-<div id="loadingScreen">
-   <div class="spinner"></div>
-   <p>Firebase এর সাথে সংযুক্ত হচ্ছে...</p>
+<!-- Toolbar -->
+<div class="search-area">
+   <button onclick="addNew()">Add New</button>
+   <div class="nav-control">
+      <button onclick="prevRecord()">◀</button>
+      <input type="text" id="navId" placeholder="ID" />
+      <button onclick="nextRecord()">▶</button>
+   </div>
+   <button onclick="saveData()">Save</button>
+   <button onclick="showList()">List</button>
+   <button onclick="showTrash()">Trash</button>
+   <button onclick="exportData()">Export</button>
+   <button onclick="importData()">Import</button>
+   <button onclick="window.print()" style="background:#c0392b">Print</button>
+   <span id="syncStatus" class="syncing">↻ সংযুক্ত হচ্ছে...</span>
+   <input type="file" id="importFile" accept=".json" style="display:none" />
 </div>
 
 <!-- General Popup -->
@@ -146,30 +136,12 @@
    <div class="popup-box" style="width:700px">
       <div class="popup-header"><h3 id="listTitle">গ্রাহক তালিকা</h3><button class="popup-close" onclick="closeListPopup()">&times;</button></div>
       <div style="padding:10px 16px;background:#f8f9fa;border-bottom:1px solid #eee">
-         <input type="text" id="listSearch" placeholder="🔍 ID / নাম / মোবাইল / লগইন" oninput="filterList()"
+         <input type="text" id="listSearch" placeholder="🔍 ID / নাম / মোবাইল" oninput="filterList()"
             style="width:100%;padding:7px 10px;border:1.5px solid #ddd;border-radius:6px;font-size:13px;outline:none" />
       </div>
       <div class="popup-content" id="listContent" style="max-height:420px;overflow-y:auto;padding:0"></div>
       <div class="popup-footer"><button class="popup-btn grey" onclick="closeListPopup()">বন্ধ করুন</button></div>
    </div>
-</div>
-
-<!-- Toolbar -->
-<div class="search-area">
-   <button onclick="addNew()">Add New</button>
-   <div class="nav-control">
-      <button onclick="prevRecord()">◀</button>
-      <input type="text" id="navId" placeholder="ID" />
-      <button onclick="nextRecord()">▶</button>
-   </div>
-   <button onclick="saveData()">Save</button>
-   <button onclick="showList()">List</button>
-   <button onclick="showTrash()">Trash</button>
-   <button onclick="exportData()">Export</button>
-   <button onclick="importData()">Import</button>
-   <button onclick="window.print()" style="background:#c0392b">Print</button>
-   <span id="syncStatus" class="syncing"><span class="dot pulse"></span>&nbsp;সংযুক্ত হচ্ছে...</span>
-   <input type="file" id="importFile" accept=".json" style="display:none" />
 </div>
 
 <!-- PAGE 1 -->
@@ -185,7 +157,7 @@
    </div>
 
    <table class="info-table">
-      <tr><td class="label-bg"><label for="c_id">গ্রাহক আইডি (Customer ID):</label></td><td><input type="text" id="c_id" autofocus /></td></tr>
+      <tr><td class="label-bg"><label for="c_id">গ্রাহক আইডি (Customer ID):</label></td><td><input type="text" id="c_id" /></td></tr>
       <tr><td class="label-bg"><label for="c_name">নাম / প্রতিষ্ঠানের নাম (Name/Company Name):</label></td><td><input type="text" id="c_name" /></td></tr>
       <tr><td class="label-bg"><label for="c_login">লগইন আইডি (Login ID):</label></td><td><input type="text" id="c_login" /></td></tr>
       <tr><td class="label-bg"><label for="c_pass">পাসওয়ার্ড (Password):</label></td><td><input type="text" id="c_pass" /></td></tr>
@@ -310,7 +282,7 @@
    </div>
    <br/><br/>
    <div class="section-header" style="font-weight:bold;font-size:20px">সরঞ্জাম ফেরত প্রদান প্রসঙ্গে:</div>
-   <div class="terms-box">কোন কারণবশত যদি আমি ইন্টারনেট সেবা গ্রহণ বন্ধ করি, তবে আমি সরবরাহকৃত সমস্ত সরঞ্জাম অবিলম্বে <strong>AGNI SYSTEMS LTD</strong> কে ফেরত দেব। <strong>AGNI SYSTEMS LTD</strong> এর যেকোনো প্রতিনিধিকে আমি সরঞ্জাম ফেরত নেওয়ার অধিকার প্রদান করছি।</div>
+   <div class="terms-box">কোন কারণবশত যদি আমি ইন্টারনেট সেবা গ্রহণ বন্ধ করি, তবে আমি সরবরাহকৃত সমস্ত সরঞ্জাম অবিলম্বে <strong>AGNI SYSTEMS LTD</strong> কে ফেরত দেব।</div>
    <br/><br/>
    <div class="section-header" style="font-weight:bold;font-size:20px">ক্ষতি বা চুরির ক্ষেত্রে দায়িত্ব:</div>
    <div class="terms-box">সরবরাহকৃত সরঞ্জামের কোন ক্ষতি হলে বা চুরি হলে, আমি কর্তৃপক্ষকে এর যথাযথ ক্ষতিপূরণ বা মূল্য প্রদান করতে বাধ্য থাকব।</div>
@@ -345,115 +317,141 @@
    </div>
 </div>
 
-<script type="module">
-// ════════════════════════════════════════════
-// FIREBASE CONFIG — hard-coded, auto-connect
-// ════════════════════════════════════════════
-import { initializeApp, getApps, getApp }
-   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, doc, setDoc, getDocs, deleteDoc }
-   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
-const FIREBASE_CONFIG = {
+<script>
+// ════════════════════════════════════════
+// FIREBASE CONFIG
+// ════════════════════════════════════════
+const firebaseConfig = {
    apiKey:            "AIzaSyBpob-vMoKJZ66CSPJCVrnBp8CFuDztw7w",
    authDomain:        "agni-systems.firebaseapp.com",
    projectId:         "agni-systems",
    storageBucket:     "agni-systems.firebasestorage.app",
    messagingSenderId: "604966730988",
-   appId:             "1:604966730988:web:366c16f42ea0d8278639c9",
+   appId:             "1:604966730988:web:366c16f42ea0d8278639c9"
 };
 
-// Singleton init — reload এ duplicate error হবে না
-const app = getApps().find(a => a.name==="agni") ?? initializeApp(FIREBASE_CONFIG, "agni");
-const FS  = getFirestore(app);
+// Firebase init (compat version)
+if (!firebase.apps.length) {
+   firebase.initializeApp(firebaseConfig);
+}
+const db = firebase.firestore();
 
-const COLL  = "customers";
-const TRASH = "trash";
+// ════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════
+let DB      = [];
+let TRASHDB = [];
+let cur     = -1;
 
-// ── STATUS ────────────────────────────────
-function status(s) {
-   const el  = document.getElementById("syncStatus");
-   const MAP = {
-      synced:  ["synced",  false, "● Firebase সংযুক্ত"],
-      syncing: ["syncing", true,  "↻ সিঙ্ক হচ্ছে..."],
-      error:   ["error",   false, "✕ সংযোগ ত্রুটি"],
-   };
-   const [cls, pulse, txt] = MAP[s] || MAP.synced;
-   el.className = cls;
-   el.innerHTML = `<span class="dot${pulse?' pulse':''}"></span>&nbsp;${txt}`;
+// ════════════════════════════════════════
+// STATUS
+// ════════════════════════════════════════
+function setStatus(s, msg) {
+   const el = document.getElementById("syncStatus");
+   el.className = s;
+   el.textContent = msg;
 }
 
-// ── FIRESTORE CRUD ────────────────────────
-async function fbSet(col, id, data) {
-   status("syncing");
-   try   { await setDoc(doc(FS, col, String(id)), data); status("synced"); }
-   catch(e) { status("error"); console.error(e); }
+// ════════════════════════════════════════
+// FIRESTORE OPERATIONS
+// ════════════════════════════════════════
+async function fbSave(data) {
+   setStatus("syncing", "↻ সেভ হচ্ছে...");
+   try {
+      await db.collection("customers").doc(String(data.id)).set(data);
+      setStatus("synced", "● Firebase সংযুক্ত");
+      return true;
+   } catch(e) {
+      console.error("fbSave error:", e);
+      setStatus("error", "✕ সংযোগ ত্রুটি: " + e.code);
+      return false;
+   }
 }
-async function fbDel(col, id) {
-   try { await deleteDoc(doc(FS, col, String(id))); }
+
+async function fbDelete(id, record) {
+   try {
+      await db.collection("customers").doc(String(id)).delete();
+      if (record) await db.collection("trash").doc(String(id)).set(record);
+   } catch(e) { console.error(e); }
+}
+
+async function fbTrashDelete(id) {
+   try { await db.collection("trash").doc(String(id)).delete(); }
    catch(e) { console.error(e); }
 }
-async function fbAll() {
-   status("syncing");
+
+async function fbRestore(id, record) {
    try {
-      const [cs, ts] = await Promise.all([
-         getDocs(collection(FS, COLL)),
-         getDocs(collection(FS, TRASH)),
+      await db.collection("customers").doc(String(id)).set(record);
+      await db.collection("trash").doc(String(id)).delete();
+   } catch(e) { console.error(e); }
+}
+
+async function fbLoadAll() {
+   setStatus("syncing", "↻ লোড হচ্ছে...");
+   try {
+      const [cSnap, tSnap] = await Promise.all([
+         db.collection("customers").get(),
+         db.collection("trash").get()
       ]);
-      const customers=[], trashList=[];
-      cs.forEach(d => customers.push(d.data()));
-      ts.forEach(d => trashList.push(d.data()));
-      customers.sort((a,b) => (Number(a.id)||0)-(Number(b.id)||0));
-      status("synced");
+      const customers = [];
+      const trashList = [];
+      cSnap.forEach(d => customers.push(d.data()));
+      tSnap.forEach(d => trashList.push(d.data()));
+      customers.sort((a,b) => (Number(a.id)||0) - (Number(b.id)||0));
+      setStatus("synced", "● Firebase সংযুক্ত");
       return { customers, trash: trashList };
-   } catch(e) { status("error"); console.error(e); return null; }
+   } catch(e) {
+      console.error("fbLoadAll error:", e);
+      setStatus("error", "✕ " + (e.code || e.message));
+      return null;
+   }
 }
 
-// ── LOCAL STATE ───────────────────────────
-let DB    = JSON.parse(localStorage.getItem("customers")) || [];
-let TRASHDB = JSON.parse(localStorage.getItem("trash"))  || [];
-let cur   = -1;
-
-function localSave() {
-   localStorage.setItem("customers", JSON.stringify(DB));
-   localStorage.setItem("trash",     JSON.stringify(TRASHDB));
-}
 async function cloudSync() {
-   const r = await fbAll();
-   if (r) { DB = r.customers; TRASHDB = r.trash; localSave(); }
+   const r = await fbLoadAll();
+   if (r) {
+      DB = r.customers;
+      TRASHDB = r.trash;
+      localStorage.setItem("customers", JSON.stringify(DB));
+      localStorage.setItem("trash", JSON.stringify(TRASHDB));
+   }
 }
 
-// ── HELPERS ───────────────────────────────
+// ════════════════════════════════════════
+// HELPERS
+// ════════════════════════════════════════
 function nextId() {
-   const all = [...DB,...TRASHDB];
-   return String((all.length ? Math.max(...all.map(c=>Number(c.id)||0)) : 0)+1).padStart(4,"0");
+   const all = [...DB, ...TRASHDB];
+   return String((all.length ? Math.max(...all.map(c => Number(c.id)||0)) : 0) + 1).padStart(4,"0");
 }
+
 function updateHeaderSerial() {
    document.getElementById("headerNumber").textContent =
-      "#" + String(DB.length+1).padStart(4,"0");
+      "#" + String(DB.length + 1).padStart(4,"0");
 }
-function autoSlash(id) {
-   document.getElementById(id).addEventListener("input", function() {
-      let v=this.value.replace(/\D/g,"").slice(0,8), f="";
-      f = v.length>=2 ? v.slice(0,2)+"/" : v;
-      if (v.length>=4) f+=v.slice(2,4)+"/"; else if(v.length>2) f+=v.slice(2);
-      if (v.length>4) f+=v.slice(4);
-      this.value=f;
-   });
-}
-autoSlash("c_dob"); autoSlash("c_conn");
 
 function updateTotal() {
-   const t=Array.from(document.querySelectorAll("#equipTable .price,.price-2"))
-      .reduce((s,i)=>s+(Number(i.value)||0),0);
-   document.getElementById("totalPrice").textContent=t;
+   const t = Array.from(document.querySelectorAll("#equipTable .price, .price-2"))
+      .reduce((s,i) => s + (Number(i.value)||0), 0);
+   document.getElementById("totalPrice").textContent = t;
 }
-document.querySelectorAll("#equipTable .price,.price-2")
-   .forEach(i=>i.addEventListener("input",updateTotal));
 
-// ── FORM ──────────────────────────────────
+function autoSlash(id) {
+   document.getElementById(id).addEventListener("input", function() {
+      let v = this.value.replace(/\D/g,"").slice(0,8), f = "";
+      f = v.length>=2 ? v.slice(0,2)+"/" : v;
+      if (v.length>=4) f += v.slice(2,4)+"/"; else if(v.length>2) f += v.slice(2);
+      if (v.length>4) f += v.slice(4);
+      this.value = f;
+   });
+}
+
+// ════════════════════════════════════════
+// FORM GET / SET / CLEAR
+// ════════════════════════════════════════
 function formGet() {
-   const d={
+   const d = {
       id:            document.getElementById("c_id").value.trim(),
       name:          document.getElementById("c_name").value.trim(),
       login:         document.getElementById("c_login").value.trim(),
@@ -467,150 +465,188 @@ function formGet() {
       thana:         document.getElementById("c_thana").value.trim(),
       conn:          document.getElementById("c_conn").value.trim(),
       remark:        document.getElementById("c_remark").value.trim(),
-      customer_type: document.querySelector('[name="Customer_Type"]:checked')?.value||"",
-      package_type:  document.querySelector('[name="Package_Type"]:checked')?.value||"",
-      splitter_type: document.querySelector('[name="splitter_type"]:checked')?.value||"",
-      equipment:[], totalPrice:0,
+      customer_type: (document.querySelector('[name="Customer_Type"]:checked') || {}).value || "",
+      package_type:  (document.querySelector('[name="Package_Type"]:checked')  || {}).value || "",
+      splitter_type: (document.querySelector('[name="splitter_type"]:checked') || {}).value || "",
+      equipment: [], totalPrice: 0
    };
-   const t=document.getElementById("equipTable");
-   for(let i=1;i<t.rows.length-1;i++){
-      const r=t.rows[i],row=[];
-      for(let j=0;j<r.cells.length;j++){
-         const inp=r.cells[j].querySelector('input[type="text"]');
-         row.push(inp?inp.value:r.cells[j].innerText.trim());
+   const t = document.getElementById("equipTable");
+   for (let i=1; i<t.rows.length-1; i++) {
+      const r=t.rows[i], row=[];
+      for (let j=0; j<r.cells.length; j++) {
+         const inp = r.cells[j].querySelector('input[type="text"]');
+         row.push(inp ? inp.value : r.cells[j].innerText.trim());
       }
       d.equipment.push(row);
    }
-   d.totalPrice=Array.from(document.querySelectorAll("#equipTable .price,.price-2"))
-      .reduce((s,i)=>s+(Number(i.value)||0),0);
+   d.totalPrice = Array.from(document.querySelectorAll("#equipTable .price, .price-2"))
+      .reduce((s,i) => s+(Number(i.value)||0), 0);
    return d;
 }
 
 function formSet(d) {
-   const MAP={c_id:"id",c_name:"name",c_login:"login",c_pass:"pass",
-              c_mob:"mobile",c_recharge:"recharge",c_nid:"nid",c_dob:"dob",
-              c_house:"house",c_area:"area",c_thana:"thana",c_conn:"conn",c_remark:"remark"};
-   Object.entries(MAP).forEach(([elId,key])=>{
-      document.getElementById(elId).value = d[key] || (key==="thana"?"PANCHAGARH SADAR":"");
-   });
-   document.querySelectorAll('[name="Customer_Type"]').forEach(r=>r.checked=r.value===d.customer_type);
-   document.querySelectorAll('[name="Package_Type"]').forEach(r =>r.checked=r.value===d.package_type);
-   document.querySelectorAll('[name="splitter_type"]').forEach(r=>r.checked=r.value===d.splitter_type);
-   if(Array.isArray(d.equipment)){
-      const tbl=document.getElementById("equipTable");
-      d.equipment.forEach((rd,i)=>{
-         if(i>=tbl.rows.length-1)return;
-         rd.forEach((v,j)=>{const inp=tbl.rows[i+1].cells[j]?.querySelector('input[type="text"]');if(inp)inp.value=v;});
+   document.getElementById("c_id").value      = d.id      || "";
+   document.getElementById("c_name").value    = d.name    || "";
+   document.getElementById("c_login").value   = d.login   || "";
+   document.getElementById("c_pass").value    = d.pass    || "";
+   document.getElementById("c_mob").value     = d.mobile  || "";
+   document.getElementById("c_recharge").value= d.recharge|| "";
+   document.getElementById("c_nid").value     = d.nid     || "";
+   document.getElementById("c_dob").value     = d.dob     || "";
+   document.getElementById("c_house").value   = d.house   || "";
+   document.getElementById("c_area").value    = d.area    || "";
+   document.getElementById("c_thana").value   = d.thana   || "PANCHAGARH SADAR";
+   document.getElementById("c_conn").value    = d.conn    || "";
+   document.getElementById("c_remark").value  = d.remark  || "";
+
+   document.querySelectorAll('[name="Customer_Type"]').forEach(r => r.checked = r.value===d.customer_type);
+   document.querySelectorAll('[name="Package_Type"]').forEach(r  => r.checked = r.value===d.package_type);
+   document.querySelectorAll('[name="splitter_type"]').forEach(r => r.checked = r.value===d.splitter_type);
+
+   if (Array.isArray(d.equipment)) {
+      const tbl = document.getElementById("equipTable");
+      d.equipment.forEach((rd,i) => {
+         if (i >= tbl.rows.length-1) return;
+         rd.forEach((v,j) => {
+            const inp = tbl.rows[i+1].cells[j] && tbl.rows[i+1].cells[j].querySelector('input[type="text"]');
+            if (inp) inp.value = v;
+         });
       });
    }
-   document.getElementById("sig_name").textContent   = d.name||"";
-   document.getElementById("sig_mobile").textContent = d.mobile||"";
+   document.getElementById("sig_name").textContent   = d.name   || "";
+   document.getElementById("sig_mobile").textContent = d.mobile || "";
    updateTotal();
-   const idx=DB.indexOf(d);
-   if(idx>=0) document.getElementById("headerNumber").textContent="#"+String(idx+1).padStart(4,"0");
+   const idx = DB.indexOf(d);
+   if (idx>=0) document.getElementById("headerNumber").textContent = "#"+String(idx+1).padStart(4,"0");
 }
 
 function formClear() {
-   document.querySelectorAll("input[type=text]").forEach(i=>i.value="");
-   document.querySelectorAll("input[type=radio]").forEach(i=>i.checked=false);
-   document.getElementById("c_thana").value="PANCHAGARH SADAR";
-   document.getElementById("totalPrice").textContent="0";
-   document.getElementById("sig_name").textContent="";
-   document.getElementById("sig_mobile").textContent="";
+   document.querySelectorAll("input[type=text]").forEach(i => i.value="");
+   document.querySelectorAll("input[type=radio]").forEach(i => i.checked=false);
+   document.getElementById("c_thana").value = "PANCHAGARH SADAR";
+   document.getElementById("totalPrice").textContent = "0";
+   document.getElementById("sig_name").textContent   = "";
+   document.getElementById("sig_mobile").textContent = "";
 }
 
-// ── ACTIONS ───────────────────────────────
-window.addNew = async function() {
-   const d=formGet();
-   if(!d.name){showPopup("নাম লিখুন","warning");return;}
-   if(!d.id) d.id=nextId();
-   const i=DB.findIndex(c=>c.id==d.id);
-   if(i>=0) DB[i]=d; else DB.push(d);
-   localSave(); await fbSet(COLL,d.id,d);
-   showPopup("✅ সেভ হয়েছে! নতুন ফর্ম প্রস্তুত।","success");
+// ════════════════════════════════════════
+// ACTIONS
+// ════════════════════════════════════════
+async function addNew() {
+   const d = formGet();
+   if (!d.name) { showPopup("নাম লিখুন", "warning"); return; }
+   if (!d.id)   d.id = nextId();
+
+   const ok = await fbSave(d);
+   if (!ok) return;
+
+   const idx = DB.findIndex(c => c.id==d.id);
+   if (idx>=0) DB[idx]=d; else DB.push(d);
+   localStorage.setItem("customers", JSON.stringify(DB));
+
+   showPopup("✅ সেভ হয়েছে! নতুন ফর্ম প্রস্তুত।", "success");
    formClear(); updateHeaderSerial(); cur=-1;
    document.getElementById("c_id").focus();
-};
+}
 
-window.saveData = async function() {
-   const d=formGet();
-   if(!d.name){showPopup("নাম লিখুন","warning");return;}
-   if(!d.id){d.id=nextId();document.getElementById("c_id").value=d.id;}
-   const i=DB.findIndex(c=>c.id==d.id);
-   if(i>=0) DB[i]=d; else DB.push(d);
-   localSave(); await fbSet(COLL,d.id,d);
-   showPopup("✅ ডাটা সংরক্ষণ হয়েছে","success");
-};
+async function saveData() {
+   const d = formGet();
+   if (!d.name) { showPopup("নাম লিখুন", "warning"); return; }
+   if (!d.id)   { d.id = nextId(); document.getElementById("c_id").value = d.id; }
 
-// ── NAVIGATION ────────────────────────────
-window.nextRecord = async function() {
+   const ok = await fbSave(d);
+   if (!ok) return;
+
+   const idx = DB.findIndex(c => c.id==d.id);
+   if (idx>=0) DB[idx]=d; else DB.push(d);
+   localStorage.setItem("customers", JSON.stringify(DB));
+
+   showPopup("✅ ডাটা সংরক্ষণ হয়েছে", "success");
+}
+
+// ════════════════════════════════════════
+// NAVIGATION
+// ════════════════════════════════════════
+async function nextRecord() {
    await cloudSync();
-   if(!DB.length){showPopup("কোনো ডাটা নেই","warning");return;}
-   cur=(cur+1)%DB.length; formSet(DB[cur]);
-   document.getElementById("navId").value=cur+1;
-};
-window.prevRecord = async function() {
+   if (!DB.length) { showPopup("কোনো ডাটা নেই","warning"); return; }
+   cur = (cur+1) % DB.length;
+   formSet(DB[cur]);
+   document.getElementById("navId").value = cur+1;
+}
+async function prevRecord() {
    await cloudSync();
-   if(!DB.length){showPopup("কোনো ডাটা নেই","warning");return;}
-   cur=(cur-1+DB.length)%DB.length; formSet(DB[cur]);
-   document.getElementById("navId").value=cur+1;
-};
-document.getElementById("navId").addEventListener("keydown",function(e){
-   if(e.key==="Enter"){
-      const s=parseInt(this.value);
-      if(!s||s<1||s>DB.length){showPopup("সঠিক নম্বর দিন","warning");return;}
+   if (!DB.length) { showPopup("কোনো ডাটা নেই","warning"); return; }
+   cur = (cur-1+DB.length) % DB.length;
+   formSet(DB[cur]);
+   document.getElementById("navId").value = cur+1;
+}
+document.getElementById("navId").addEventListener("keydown", function(e) {
+   if (e.key==="Enter") {
+      const s = parseInt(this.value);
+      if (!s||s<1||s>DB.length) { showPopup("সঠিক নম্বর দিন","warning"); return; }
       cur=s-1; formSet(DB[cur]);
    }
 });
 
-// ── LIST ──────────────────────────────────
+// ════════════════════════════════════════
+// LIST
+// ════════════════════════════════════════
 function listHTML(arr) {
-   if(!arr.length)return`<p style="text-align:center;color:#888;padding:20px">কোনো ডাটা নেই।</p>`;
-   return`<table style="width:100%;border-collapse:collapse;font-size:12px">
+   if (!arr.length) return `<p style="text-align:center;color:#888;padding:20px">কোনো ডাটা নেই।</p>`;
+   return `<table style="width:100%;border-collapse:collapse;font-size:12px">
       <thead><tr style="background:#ecf0f1;position:sticky;top:0">
-         <th style="padding:7px 5px">#</th><th>ID</th><th>নাম</th><th>মোবাইল</th><th>একশন</th>
+         <th style="padding:7px">#</th><th>ID</th><th>নাম</th><th>মোবাইল</th><th>একশন</th>
       </tr></thead><tbody>`
-   +arr.map((c,i)=>`<tr style="border-bottom:1px solid #f0f0f0">
-      <td style="text-align:center;padding:6px 4px;color:#888">${i+1}</td>
-      <td style="padding:6px 4px;font-family:monospace">${c.id}</td>
-      <td style="padding:6px 4px">${c.name||""}</td>
-      <td style="padding:6px 4px">${c.mobile||""}</td>
+   + arr.map((c,i) => `<tr style="border-bottom:1px solid #f0f0f0">
+      <td style="text-align:center;padding:6px;color:#888">${i+1}</td>
+      <td style="padding:6px;font-family:monospace">${c.id}</td>
+      <td style="padding:6px">${c.name||""}</td>
+      <td style="padding:6px">${c.mobile||""}</td>
       <td style="text-align:center;padding:4px">
          <button style="padding:3px 9px;background:#3498db;color:#fff;border:none;border-radius:3px;cursor:pointer;margin:2px" onclick="viewRecord('${c.id}')">View</button>
          <button style="padding:3px 9px;background:#e74c3c;color:#fff;border:none;border-radius:3px;cursor:pointer;margin:2px" onclick="deleteFromList('${c.id}')">Delete</button>
-      </td></tr>`).join("")+"</tbody></table>";
+      </td></tr>`).join("") + "</tbody></table>";
 }
 
-window.showList = async function() {
-   document.getElementById("listTitle").textContent="গ্রাহক তালিকা";
+async function showList() {
+   document.getElementById("listTitle").textContent = "গ্রাহক তালিকা";
    await cloudSync();
-   document.getElementById("listContent").innerHTML=listHTML(DB);
-   document.getElementById("listPopup").style.display="flex";
-};
-window.filterList = function() {
-   const q=document.getElementById("listSearch").value.toLowerCase();
-   document.getElementById("listContent").innerHTML=listHTML(
-      DB.filter(c=>[c.id,c.name,c.mobile,c.login].some(v=>v&&v.toLowerCase().includes(q))));
-};
-window.closeListPopup=()=>document.getElementById("listPopup").style.display="none";
+   document.getElementById("listContent").innerHTML = listHTML(DB);
+   document.getElementById("listPopup").classList.add("active");
+}
+function filterList() {
+   const q = document.getElementById("listSearch").value.toLowerCase();
+   document.getElementById("listContent").innerHTML = listHTML(
+      DB.filter(c => [c.id,c.name,c.mobile,c.login].some(v => v&&v.toLowerCase().includes(q))));
+}
+function closeListPopup() { document.getElementById("listPopup").classList.remove("active"); }
 
-window.viewRecord = function(id) {
-   const i=DB.findIndex(c=>String(c.id)===String(id));
-   if(i===-1){alert("পাওয়া যায়নি!");return;}
-   cur=i; formSet(DB[i]); document.getElementById("navId").value=i+1; closeListPopup();
-};
+function viewRecord(id) {
+   const i = DB.findIndex(c => String(c.id)===String(id));
+   if (i===-1) { alert("পাওয়া যায়নি!"); return; }
+   cur=i; formSet(DB[i]);
+   document.getElementById("navId").value = i+1;
+   closeListPopup();
+}
 
-// ── TRASH ─────────────────────────────────
-window.deleteFromList = async function(id) {
-   const i=DB.findIndex(c=>c.id===id);
-   if(i<0||!confirm(`ID: ${id} — ট্র্যাশে পাঠাবেন?`))return;
-   const rec=DB[i]; TRASHDB.push(rec); DB.splice(i,1); localSave();
-   await fbDel(COLL,id); await fbSet(TRASH,id,rec);
+// ════════════════════════════════════════
+// TRASH
+// ════════════════════════════════════════
+async function deleteFromList(id) {
+   const i = DB.findIndex(c => c.id===id);
+   if (i<0 || !confirm(`ID: ${id} — ট্র্যাশে পাঠাবেন?`)) return;
+   const rec = DB[i];
+   DB.splice(i,1);
+   TRASHDB.push(rec);
+   localStorage.setItem("customers", JSON.stringify(DB));
+   localStorage.setItem("trash", JSON.stringify(TRASHDB));
+   await fbDelete(id, rec);
    showList();
-};
+}
 
-window.showTrash = async function() {
-   document.getElementById("listTitle").textContent="🗑 Trash";
+async function showTrash() {
+   document.getElementById("listTitle").textContent = "🗑 Trash";
    await cloudSync();
    document.getElementById("listContent").innerHTML = !TRASHDB.length
       ? `<p style="text-align:center;color:#888;padding:20px">Trash খালি।</p>`
@@ -618,87 +654,114 @@ window.showTrash = async function() {
          <thead><tr style="background:#ecf0f1;position:sticky;top:0">
             <th style="padding:7px">#</th><th>ID</th><th>নাম</th><th>মোবাইল</th><th>একশন</th>
          </tr></thead><tbody>`
-        +TRASHDB.map((c,i)=>`<tr style="border-bottom:1px solid #f0f0f0">
+        + TRASHDB.map((c,i) => `<tr style="border-bottom:1px solid #f0f0f0">
            <td style="text-align:center;padding:6px;color:#888">${i+1}</td>
            <td style="padding:6px;font-family:monospace">${c.id}</td>
            <td style="padding:6px">${c.name||""}</td>
            <td style="padding:6px">${c.mobile||""}</td>
            <td style="text-align:center;padding:4px">
               <button style="padding:3px 9px;background:#27ae60;color:#fff;border:none;border-radius:3px;cursor:pointer;margin:2px" onclick="restoreRecord('${c.id}')">Restore</button>
-              <button style="padding:3px 9px;background:#e74c3c;color:#fff;border:none;border-radius:3px;cursor:pointer;margin:2px" onclick="deleteFromTrash('${c.id}')">Delete</button>
-           </td></tr>`).join("")+"</tbody></table>";
-   document.getElementById("listPopup").style.display="flex";
-};
-window.restoreRecord = async function(id) {
-   const i=TRASHDB.findIndex(c=>c.id===id); if(i<0)return;
-   const rec=TRASHDB[i]; DB.push(rec); TRASHDB.splice(i,1); localSave();
-   await fbSet(COLL,id,rec); await fbDel(TRASH,id); showTrash();
-};
-window.deleteFromTrash = async function(id) {
-   const i=TRASHDB.findIndex(c=>c.id===id);
-   if(i<0||!confirm(`ID: ${id} — স্থায়ীভাবে মুছবেন?`))return;
-   TRASHDB.splice(i,1); localSave(); await fbDel(TRASH,id); showTrash();
-};
+              <button style="padding:3px 9px;background:#e74c3c;color:#fff;border:none;border-radius:3px;cursor:pointer;margin:2px" onclick="permDelete('${c.id}')">Delete</button>
+           </td></tr>`).join("") + "</tbody></table>";
+   document.getElementById("listPopup").classList.add("active");
+}
 
-// ── EXPORT / IMPORT ───────────────────────
-window.exportData = async function() {
-   const d=formGet();
-   if(d.name){if(!d.id)d.id=nextId();const i=DB.findIndex(c=>c.id==d.id);if(i>=0)DB[i]=d;else DB.push(d);localSave();await fbSet(COLL,d.id,d);}
-   if(!DB.length){showPopup("ডাটা নেই","warning");return;}
-   const a=document.createElement("a");
-   a.href=URL.createObjectURL(new Blob([JSON.stringify(DB,null,2)],{type:"application/json"}));
-   a.download="customers-"+new Date().toISOString().slice(0,10)+".json";
-   a.click(); showPopup("✅ Export সম্পন্ন","success");
-};
-window.importData=()=>document.getElementById("importFile").click();
-document.getElementById("importFile").addEventListener("change",async function(e){
-   const file=e.target.files[0]; if(!file)return;
-   const r=new FileReader();
-   r.onload=async function(ev){
-      try{
-         let imp=JSON.parse(ev.target.result);
-         if(!Array.isArray(imp))imp=[imp];
-         if(!imp.length){showPopup("ফাইল খালি","warning");return;}
-         formSet(imp[0]); let n=0;
-         for(const rec of imp){
-            if(rec.id&&!DB.find(c=>c.id==rec.id)){DB.push(rec);n++;await fbSet(COLL,rec.id,rec);}
+async function restoreRecord(id) {
+   const i = TRASHDB.findIndex(c => c.id===id); if (i<0) return;
+   const rec = TRASHDB[i];
+   TRASHDB.splice(i,1); DB.push(rec);
+   localStorage.setItem("customers", JSON.stringify(DB));
+   localStorage.setItem("trash", JSON.stringify(TRASHDB));
+   await fbRestore(id, rec);
+   showTrash();
+}
+
+async function permDelete(id) {
+   const i = TRASHDB.findIndex(c => c.id===id);
+   if (i<0 || !confirm(`ID: ${id} — স্থায়ীভাবে মুছবেন?`)) return;
+   TRASHDB.splice(i,1);
+   localStorage.setItem("trash", JSON.stringify(TRASHDB));
+   await fbTrashDelete(id);
+   showTrash();
+}
+
+// ════════════════════════════════════════
+// EXPORT / IMPORT
+// ════════════════════════════════════════
+async function exportData() {
+   if (!DB.length) { showPopup("ডাটা নেই","warning"); return; }
+   const a = document.createElement("a");
+   a.href = URL.createObjectURL(new Blob([JSON.stringify(DB,null,2)],{type:"application/json"}));
+   a.download = "customers-"+new Date().toISOString().slice(0,10)+".json";
+   a.click();
+   showPopup("✅ Export সম্পন্ন","success");
+}
+function importData() { document.getElementById("importFile").click(); }
+document.getElementById("importFile").addEventListener("change", async function(e) {
+   const file = e.target.files[0]; if (!file) return;
+   const reader = new FileReader();
+   reader.onload = async function(ev) {
+      try {
+         let imp = JSON.parse(ev.target.result);
+         if (!Array.isArray(imp)) imp = [imp];
+         if (!imp.length) { showPopup("ফাইল খালি","warning"); return; }
+         formSet(imp[0]);
+         let n = 0;
+         for (const rec of imp) {
+            if (rec.id && !DB.find(c => c.id==rec.id)) {
+               DB.push(rec); n++;
+               await fbSave(rec);
+            }
          }
-         if(n)localSave();
+         localStorage.setItem("customers", JSON.stringify(DB));
          showPopup(`${imp.length} রেকর্ড ইম্পোর্ট, ${n} নতুন যুক্ত।`,"success");
-      }catch(err){showPopup("JSON Error: "+err.message,"error");}
+      } catch(err) { showPopup("JSON Error: "+err.message,"error"); }
    };
-   r.readAsText(file); e.target.value="";
+   reader.readAsText(file); e.target.value="";
 });
 
-// ── POPUP ─────────────────────────────────
-window.showPopup=function(msg,type="info",title=""){
-   const t={success:"সফল",error:"ত্রুটি",warning:"সতর্কতা"};
-   document.getElementById("popupBox").className="popup-box "+type;
-   document.getElementById("popupTitle").textContent=title||t[type]||"বার্তা";
-   document.getElementById("popupMessage").innerHTML=msg.replace(/\n/g,"<br>");
-   document.getElementById("popupOverlay").style.display="flex";
-};
-window.closePopup=()=>document.getElementById("popupOverlay").style.display="none";
-document.addEventListener("keydown",e=>{if(e.key==="Escape")closePopup();});
+// ════════════════════════════════════════
+// POPUP
+// ════════════════════════════════════════
+function showPopup(msg, type="info", title="") {
+   const t = {success:"সফল",error:"ত্রুটি",warning:"সতর্কতা"};
+   document.getElementById("popupBox").className = "popup-box "+type;
+   document.getElementById("popupTitle").textContent = title || t[type] || "বার্তা";
+   document.getElementById("popupMessage").innerHTML = msg.replace(/\n/g,"<br>");
+   document.getElementById("popupOverlay").classList.add("active");
+}
+function closePopup() { document.getElementById("popupOverlay").classList.remove("active"); }
+document.addEventListener("keydown", e => { if(e.key==="Escape") { closePopup(); closeListPopup(); }});
 
-// ── UX ────────────────────────────────────
-document.querySelectorAll("input").forEach((el,i,arr)=>{
-   el.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();arr[i+1]?.focus();}});
+// ════════════════════════════════════════
+// UX
+// ════════════════════════════════════════
+document.querySelectorAll("input").forEach((el,i,arr) => {
+   el.addEventListener("keydown", e => {
+      if (e.key==="Enter") { e.preventDefault(); if(arr[i+1]) arr[i+1].focus(); }
+   });
 });
-document.getElementById("c_name").addEventListener("input",function(){
-   document.getElementById("sig_name").textContent=this.value;
+document.getElementById("c_name").addEventListener("input", function() {
+   document.getElementById("sig_name").textContent = this.value;
 });
-document.getElementById("c_mob").addEventListener("input",function(){
-   document.getElementById("sig_mobile").textContent=this.value;
+document.getElementById("c_mob").addEventListener("input", function() {
+   document.getElementById("sig_mobile").textContent = this.value;
 });
+document.querySelectorAll("#equipTable .price, .price-2")
+   .forEach(i => i.addEventListener("input", updateTotal));
+autoSlash("c_dob"); autoSlash("c_conn");
 
-// ── STARTUP ───────────────────────────────
-(async () => {
+// ════════════════════════════════════════
+// STARTUP
+// ════════════════════════════════════════
+window.addEventListener("load", async function() {
    updateTotal();
-   await cloudSync();          // Firebase থেকে সব ডাটা load
+   DB    = JSON.parse(localStorage.getItem("customers")) || [];
+   TRASHDB = JSON.parse(localStorage.getItem("trash"))  || [];
    updateHeaderSerial();
-   document.getElementById("loadingScreen").classList.add("hidden"); // loading hide
-})();
+   await cloudSync();
+   updateHeaderSerial();
+});
 </script>
 </body>
 </html>
