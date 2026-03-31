@@ -358,12 +358,18 @@ function setStatus(s, msg) {
 async function fbSave(data) {
    setStatus("syncing", "↻ সেভ হচ্ছে...");
    try {
-      await db.collection("customers").doc(String(data.id)).set(data);
+      // ID অবশ্যই non-empty string হতে হবে
+      const docId = String(data.id || nextId()).trim();
+      if (!docId) throw new Error("Invalid ID");
+      data.id = docId;
+      // Firestore এ undefined value থাকলে error — সব value string করো
+      const clean = JSON.parse(JSON.stringify(data));
+      await db.collection("customers").doc(docId).set(clean);
       setStatus("synced", "● Firebase সংযুক্ত");
       return true;
    } catch(e) {
       console.error("fbSave error:", e);
-      setStatus("error", "✕ সংযোগ ত্রুটি: " + e.code);
+      setStatus("error", "✕ " + (e.code || e.message));
       return false;
    }
 }
