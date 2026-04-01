@@ -1,12 +1,16 @@
-<!DOCTYPE html>
-<html lang="bn">
+<!--<!DOCTYPE html> -->
+<html lang="en">
 <head>
    <meta charset="UTF-8"/>
    <title>Agni Systems Limited</title>
    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+   <!-- <link rel="stylesheet" href="css/style.css"> -->
+
    <style>
+
+      
       @font-face{font-family:"UNBangla";src:url("fonts/UNBangla-Regular.woff2") format("woff2");font-weight:normal;font-style:normal;font-display:swap;}
       *{box-sizing:border-box;}
       body{font-family:"UNBangla",sans-serif;background:#e0e0e0;margin:0;padding:0;}
@@ -30,10 +34,10 @@
       .header-center h2{margin:0;font-size:12px;font-weight:600;}
       .header-center h3{margin:0;font-size:11px;text-decoration:underline;}
       .info-table{width:100%;border-collapse:collapse;margin-top:10px;table-layout:fixed;}
-      .info-table td{border:1px solid #000;padding:2px 4px;font-size:10px;height:18px;}
+      .info-table td{border:1px solid #000;padding:2px 4px;font-size:10px;min-height:18px;}
       .label-bg{background:#f2f2f2;width:35%;}
       .label-bg label{display:block;width:100%;height:100%;cursor:pointer;}
-      .checkbox-row{display:flex;align-items:center;font-size:10px;gap:2px;flex-wrap:wrap;}
+      .checkbox-row{display:flex;align-items:center;font-size:10px;gap:2px;flex-wrap:wrap;padding:2px 4px;}
       input[type="text"]{width:98%;padding:3px 4px;font-size:12px;border:none;outline:none;background:transparent;}
       input[type="radio"]{vertical-align:middle;}
       #equipTable input[type="text"]{width:100%;padding:1px 2px;font-size:10px;border:none;outline:none;background:transparent;}
@@ -59,6 +63,7 @@
       .popup-box.warning .popup-header{background:#f39c12;}
       .popup-box.info .popup-header{background:#3498db;}
       @media print{body{background:white;}.search-area{display:none;}.a4-page{height:297mm;padding:5mm 10mm;margin:0;box-shadow:none;}.popup-overlay{display:none!important;}}
+      
    </style>
 </head>
 <body>
@@ -75,7 +80,7 @@
    <button onclick="showTrash()">Trash</button>
    <button onclick="exportData()">Export JSON</button>
    <button onclick="importData()">Import</button>
-   <button onclick="downloadExcel()" style="background:#1a6b3a">&#128229; Excel ডাউনলোড</button>
+   <button onclick="downloadExcel()" style="background:#1a6b3a">Excel</button>
    <button onclick="window.print()" style="background:#c0392b">Print</button>
    <span id="syncStatus" class="syncing">&#8635; সংযুক্ত হচ্ছে...</span>
    <input type="file" id="importFile" accept=".json" style="display:none"/>
@@ -191,31 +196,40 @@
          <td><input type="text" id="eq_o_price" class="price"/></td>
       </tr>
       <tr>
-         <td rowspan="2">4.</td><td rowspan="2">টিজে বক্স</td>
+         <td>4.</td><td>রিপ্লেস অনু (Replace ONU)</td>
+         <td colspan="2"><input type="text" id="eq_new_model" style="text-align:center"/></td>
+         <td colspan="2"><input type="text" id="eq_new_qty" style="text-align:center"/></td>
+         <td><input type="text" id="eq_new_serial" style="text-align:center"/></td>
+         <td><input type="text" id="eq_new_price" class="price"/></td>
+      </tr>
+      <tr>
+         <td rowspan="2">5.</td><td rowspan="2">টিজে বক্স</td>
          <td colspan="2">2</td>
          <td colspan="2"><input type="text" id="eq_t1_qty" style="text-align:center"/></td>
-         <td rowspan="2"><input type="text" id="eq_t_serial" style="text-align:center"/></td>
-         <td rowspan="2"><input type="text" id="eq_t_price" class="price-2"/></td>
+         <td><input type="text" id="eq_t1_serial" style="text-align:center"/></td>
+         <td><input type="text" id="eq_t1_price" class="price" style="text-align:center"/></td>
       </tr>
       <tr>
          <td>4</td><td>8</td>
          <td><input type="text" id="eq_t2_qty4" style="text-align:center"/></td>
          <td><input type="text" id="eq_t2_qty8" style="text-align:center"/></td>
+         <td><input type="text" id="eq_t2_serial" style="text-align:center"/></td>
+         <td><input type="text" id="eq_t2_price" class="price" style="text-align:center"/></td>
       </tr>
       <tr>
-         <td>5.</td><td>প্যাচকোড</td>
+         <td>6.</td><td>প্যাচকোড</td>
          <td colspan="2"><input type="text" id="eq_p_model" style="text-align:center"/></td>
          <td colspan="2"><input type="text" id="eq_p_qty" style="text-align:center"/></td>
          <td><input type="text" id="eq_p_serial" style="text-align:center"/></td>
          <td><input type="text" id="eq_p_price" class="price"/></td>
       </tr>
       <tr>
-         <td>6.</td><td>স্প্লিটার (Splitter)</td>
+         <td>7.</td><td>স্প্লিটার (Splitter)</td>
          <td colspan="4" style="text-align:left;padding-left:10px">
-            <input type="radio" name="splitter_type" value="1*2"/> 1*2
-            <input type="radio" name="splitter_type" value="1*4"/> 1*4
-            <input type="radio" name="splitter_type" value="1*8"/> 1*8
-            <input type="radio" name="splitter_type" value="1*16"/> 1*16
+            <input type="checkbox" name="splitter_type" value="1*2"/> 1*2
+            <input type="checkbox" name="splitter_type" value="1*4"/> 1*4
+            <input type="checkbox" name="splitter_type" value="1*8"/> 1*8
+            <input type="checkbox" name="splitter_type" value="1*16"/> 1*16
          </td>
          <td><input type="text" id="eq_s_serial" style="text-align:center"/></td>
          <td><input type="text" id="eq_s_price" class="price"/></td>
@@ -249,21 +263,21 @@
    <div class="sig-container">
       <div class="sig-item">
          সেবাপ্রদানকারী:<br/>
-         নাম: .........................................................<br/>
-         পদবি: .........................................................<br/>
+         নাম: ............................................................<br/>
+         পদবি: ..........................................................<br/>
          তারিখ: .........................................................
       </div>
       <div class="sig-item">
-         গ্রাহক:<br/>
-         <span style="position:relative;display:inline-block;width:100%">
-            নাম: .........................................................<br/>
-            <span id="sig_name" style="position:absolute;top:0;left:28px"></span>
-         </span>
-         স্বাক্ষর: .........................................................<br/>
-         <span style="position:relative;display:inline-block;width:100%">
-            মোবাইল: .........................................................<br/>
-            <span id="sig_mobile" style="position:absolute;top:0;left:55px"></span>
-         </span>
+গ্রাহক:<br/>
+<span style="position:relative;display:inline-block;width:100%">
+   নাম: ............................................................<br/>
+   <span id="sig_name" style="position:absolute;top:0;left:28px"></span>
+</span>
+<span style="position:relative;display:inline-block;width:100%">
+   মোবাইল: .....................................................<br/>
+   <span id="sig_mobile" style="position:absolute;top:0;left:55px"></span>
+</span>
+স্বাক্ষর: .........................................................
       </div>
    </div>
    <div style="margin-top:20px;font-size:11px;color:#555;border:1px solid #ddd;padding:10px">
@@ -290,7 +304,7 @@ let DB=[],TRASHDB=[],cur=-1;
 
 function setStatus(s,msg){const el=document.getElementById("syncStatus");el.className=s;el.textContent=msg;}
 
-const EQ_FIELDS=["eq_r_model","eq_r_qty","eq_r_serial","eq_r_price","eq_c1_model","eq_c1_qty","eq_c1_serial","eq_c1_price","eq_c2_model","eq_c2_qty","eq_c2_serial","eq_c2_price","eq_o_model","eq_o_qty","eq_o_serial","eq_o_price","eq_t1_qty","eq_t_serial","eq_t_price","eq_t2_qty4","eq_t2_qty8","eq_p_model","eq_p_qty","eq_p_serial","eq_p_price","eq_s_serial","eq_s_price"];
+const EQ_FIELDS=["eq_r_model","eq_r_qty","eq_r_serial","eq_r_price","eq_c1_model","eq_c1_qty","eq_c1_serial","eq_c1_price","eq_c2_model","eq_c2_qty","eq_c2_serial","eq_c2_price","eq_new_model","eq_new_qty","eq_new_serial","eq_new_price","eq_o_model","eq_o_qty","eq_o_serial","eq_o_price","eq_t1_qty","eq_t1_serial","eq_t1_price","eq_t2_qty4","eq_t2_qty8","eq_t2_serial","eq_t2_price","eq_p_model","eq_p_qty","eq_p_serial","eq_p_price","eq_s_serial","eq_s_price"];
 
 function flatten(data){
    const f={};
@@ -365,7 +379,7 @@ function formGet(){
       remark:document.getElementById("c_remark").value.trim(),
       customer_type:(document.querySelector('[name="Customer_Type"]:checked')||{}).value||"",
       package_type:(document.querySelector('[name="Package_Type"]:checked')||{}).value||"",
-      splitter_type:(document.querySelector('[name="splitter_type"]:checked')||{}).value||"",
+      splitter_type:Array.from(document.querySelectorAll('[name="splitter_type"]:checked')).map(c=>c.value).join(","),
       totalPrice:0
    };
    EQ_FIELDS.forEach(id=>{const el=document.getElementById(id);d[id]=el?el.value:"";});
@@ -388,7 +402,8 @@ function formSet(d){
    document.getElementById("c_remark").value=d.remark||"";
    document.querySelectorAll('[name="Customer_Type"]').forEach(r=>r.checked=r.value===d.customer_type);
    document.querySelectorAll('[name="Package_Type"]').forEach(r=>r.checked=r.value===d.package_type);
-   document.querySelectorAll('[name="splitter_type"]').forEach(r=>r.checked=r.value===d.splitter_type);
+   const splitterVals=(d.splitter_type||"").split(",");
+document.querySelectorAll('[name="splitter_type"]').forEach(r=>r.checked=splitterVals.includes(r.value));
    EQ_FIELDS.forEach(id=>{const el=document.getElementById(id);if(el)el.value=d[id]||"";});
    document.getElementById("sig_name").textContent=d.name||"";
    document.getElementById("sig_mobile").textContent=d.mobile||"";
@@ -399,6 +414,7 @@ function formSet(d){
 function formClear(){
    document.querySelectorAll("input[type=text]").forEach(i=>i.value="");
    document.querySelectorAll("input[type=radio]").forEach(i=>i.checked=false);
+   document.querySelectorAll("input[type=checkbox]").forEach(i=>i.checked=false);
    document.getElementById("c_thana").value="PANCHAGARH SADAR";
    document.getElementById("totalPrice").textContent="0";
    document.getElementById("sig_name").textContent="";
@@ -502,6 +518,7 @@ async function downloadExcel(){
       "Router Model","Router Qty","Router Serial","Router Price",
       "Cable1 Model","Cable1 Qty","Cable1 Serial","Cable1 Price",
       "Cable2 Model","Cable2 Qty","Cable2 Serial","Cable2 Price",
+      "New Item Model","New Item Qty","New Item Serial","New Item Price",
       "ONU Model","ONU Qty","ONU Serial","ONU Price",
       "TJ Box Qty(2port)","TJ Box Qty(4port)","TJ Box Qty(8port)","TJ Box Serial","TJ Box Price",
       "Patchcord Model","Patchcord Qty","Patchcord Serial","Patchcord Price",
@@ -516,8 +533,10 @@ async function downloadExcel(){
       c.eq_r_model||"", c.eq_r_qty||"", c.eq_r_serial||"", c.eq_r_price||"",
       c.eq_c1_model||"", c.eq_c1_qty||"", c.eq_c1_serial||"", c.eq_c1_price||"",
       c.eq_c2_model||"", c.eq_c2_qty||"", c.eq_c2_serial||"", c.eq_c2_price||"",
+      c.eq_new_model||"", c.eq_new_qty||"", c.eq_new_serial||"", c.eq_new_price||"",
       c.eq_o_model||"", c.eq_o_qty||"", c.eq_o_serial||"", c.eq_o_price||"",
-      c.eq_t1_qty||"", c.eq_t2_qty4||"", c.eq_t2_qty8||"", c.eq_t_serial||"", c.eq_t_price||"",
+      c.eq_t1_qty||"", c.eq_t1_serial||"", c.eq_t1_price||"",
+      c.eq_t2_qty4||"", c.eq_t2_qty8||"", c.eq_t2_serial||"", c.eq_t2_price||"",
       c.eq_p_model||"", c.eq_p_qty||"", c.eq_p_serial||"", c.eq_p_price||"",
       c.splitter_type||"", c.eq_s_serial||"", c.eq_s_price||"",
       c.totalPrice||0
